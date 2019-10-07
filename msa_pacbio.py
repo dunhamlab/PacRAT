@@ -9,12 +9,10 @@ from StringIO import StringIO
 from Bio import AlignIO
 from Bio.Align import AlignInfo
 
+#todo in shell script (write driver script) load muscle/latest
+muscle_exe = "/net/gs/vol3/software/modules-repo/RHEL6/muscle"
 
-muscle_exe = r"/net/gs/vol3/software/modules-repo/RHEL6/muscle"
-
-#inputfile = 
-outputfile = "test_alignment.fasta"
-#open output file
+outputfile = open("test_output.txt", "w")
 
 # TODO parse options using OptionParser 
 
@@ -38,7 +36,8 @@ for line in reads:
 	else:
 		read_dict[paired_bcread[0]] = [(paired_bcread[1],paired_bcread[2])]
 reads.close()
-print(str(len(bc_dict.keys())) + " barcodes found"
+totalBarcodes = len(bc_dict.keys()
+print(str(totalBarcodes)) + " barcodes found"
 
 # loop through all barcodes
 for key in bc_dict:
@@ -51,22 +50,31 @@ for key in bc_dict:
 			intermediate_file.write(item[0]+"\n")
 			i = i+1
 		intermediate_file.close()
-	# check if at least CUTOFF number of ccs reads here (i >= CUTOFF)
+	# check if at least CUTOFF number of ccs reads here (i >= CUTOFF) default 3?
 	
+	aln_file_name = "intermediates/alignments/" + key + ".fasta" #.afa suffix?
 	#muscle system call here, write to output file
+	#TODO: options of which aligner to use
+	#shell("clustalo -i {output.intfiles} -o {output.alnfiles}")
+	shell("muscle -in "+int_file_name+" -out "+aln_file_name) #string cat before?
 	
-	#get consensus: biopython summary_align.dumb_consensus(threshold)
-	# TODO what should the threshold be? ^ default is 70%
-	alignment = AlignIO.read(muscle_output, 'fasta')
+	#get consensus: 
+	alignment = AlignIO.read(aln_file_name, 'fasta')
 	summary_align = AlignInfo.SummaryInfo(alignment)
-	summary_align.dumb_consensus(0.5
+	consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
+	#consensusOutput = consensus.replace("-","") #not sure if there will be gaps in this one
 	
-	#check if there are N's in consensus
+	consensusCount = 0
+	#if N's: realign (pairwise aligner w/in python) to highest qual
+	if 'N' in consensus: 
+		#TODO stuff
 	
 	#if no Ns: write consensus to output file
+	else: 
+		outputfile.write("key\t"+consensus+"\n")
+		consensusCount += 1
 	
-	#if N's: realign (pairwise aligner w/in python) to highest qual
-		# get new consensus, write to output file (different output file?)
-
 #print stats on how many had consensus, etc
+print(str(consensusCount)+"of "+ str(totalBarcodes)+" barcodes had a consensus sequence")
+
 #close output file
