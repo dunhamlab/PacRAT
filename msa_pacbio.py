@@ -7,14 +7,14 @@ import sys
 from Bio.Align.Applications import MuscleCommandline
 from StringIO import StringIO
 from Bio import AlignIO
+from Bio.Align import AlignInfo
+
 
 muscle_exe = r"/net/gs/vol3/software/modules-repo/RHEL6/muscle"
 
 #inputfile = 
 outputfile = "test_alignment.fasta"
 #open output file
-
-#define a consensus function here, or find one in biopython
 
 # TODO parse options using OptionParser 
 
@@ -55,7 +55,11 @@ for key in bc_dict:
 	
 	#muscle system call here, write to output file
 	
-	#get consensus
+	#get consensus: biopython summary_align.dumb_consensus(threshold)
+	# TODO what should the threshold be? ^ default is 70%
+	alignment = AlignIO.read(muscle_output, 'fasta')
+	summary_align = AlignInfo.SummaryInfo(alignment)
+	summary_align.dumb_consensus(0.5
 	
 	#check if there are N's in consensus
 	
