@@ -17,6 +17,12 @@ outputfile = open("test_output.txt", "w+")
 #create intermediates directories
 os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments") 
 
+# TO RUN SUBPROCESS:
+# import subprocess
+# cmd = "muscle -in /net/gs/vol1/home/ccyeh/cindy_dunham/SUL1_alleleLibraryCompetition/results/19-08-29_pacbio_run2_np3_muscle_CDS_only/intermediates/consensus_1/TTTTTAAATA.fasta -out test.fasta"
+# subprocess.call(cmd,shell=True)
+# temp file resources: https://docs.python.org/3/library/tempfile.html#tempfile.mkdtemp
+
 # TODO parse options using OptionParser 
 
 print("Reading barcodes + reads file...")
