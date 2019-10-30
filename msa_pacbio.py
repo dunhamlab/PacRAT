@@ -10,12 +10,14 @@ from Bio import AlignIO
 from Bio.Align import AlignInfo
 
 #todo in shell script (write driver script) load muscle/latest
-muscle_exe = "/net/gs/vol3/software/modules-repo/RHEL6/muscle"
+muscle_exe = "/net/gs/vol3/software/modules-repo/RHEL6/muscle/3.8.31"
 
+os.chdir("/net/dunham/vol2/Cindy/pacbio_git/test_pacbio") #this is temporary, just a test
 outputfile = open("test_output.txt", "w+")
 
 #create intermediates directories
 os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments") 
+os.system("module load muscle/latest")
 
 # TO RUN SUBPROCESS:
 # import subprocess
@@ -33,9 +35,11 @@ for line in assignments:
 	paired_bcread = line.strip().split()
 	hq_dict[paired_bcread[0]] = paired_bcread[1]
 assignments.close()
+print("Done reading HQ barcodes.")
 
 # read all ccs reads into dict: BC: [(seq,qual), (seq,qual)...]
 # seq quality pairs stored as tuples
+print("Reading all PB reads...")
 read_dict = {}
 reads = open(sys.argv[2], "r") # seq_barcodes.txt
 for line in reads: 
@@ -45,12 +49,13 @@ for line in reads:
 	else:
 		read_dict[paired_bcread[0]] = [(paired_bcread[1],paired_bcread[2])]
 reads.close()
-totalBarcodes = len(hq_dict.keys()
-print(str(totalBarcodes)) + " barcodes found"
+totalBarcodes = len(hq_dict.keys())
+print(str(totalBarcodes) + " barcodes found")
 
 # GIANT FOR LOOP HERE
 # loop through all barcodes
 for key in hq_dict:
+	#create fasta file for each barcode
 	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
 	if not os.path.isfile(int_file_name):	
 		intermediate_file = open(int_file_name, "w+")
@@ -63,12 +68,18 @@ for key in hq_dict:
 	# check if at least CUTOFF number of ccs reads here (i >= CUTOFF) default 3?
 	# hmm where can we find this info?
 	
+	#align files together - first alignment
 	aln_file_name = "intermediates/alignments/" + key + ".aln" # aligned file suffix - i think we can make this whatever - it'll be in fasta format
 	#muscle system call here, write to output file
 	#TODO: options of which aligner to use
 	#shell("clustalo -i {output.intfiles} -o {output.alnfiles}")
 	if len(read_dict[key]) > 1:
-		shell("muscle -in "+int_file_name+" -out "+aln_file_name) #string cat before?
+		muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
+		stdout, stderr = muscle_cline(int_file_name)
+		align = AlignIO.read(StringIO(stdout),"fasta")
+		print(align)
+		#os.system(muscle_cline)
+		#os.system("muscle -in "+int_file_name+" -out "+aln_file_name) #string cat before?
 	
 	#get consensus: 
 	alignment = AlignIO.read(aln_file_name, 'fasta')
@@ -78,16 +89,18 @@ for key in hq_dict:
 	# I think there will be? -cy
 	
 	consensusCount = 0
+	"""
 	#if N's: realign (pairwise aligner w/in python) to highest qual
 	if 'N' in consensus:
 		#TODO stuff
+		#second alignment here
 	
 	#if no Ns: write consensus to output file
-	else: 
+	else:
 		outputfile.write("key\t"+consensus+"\n")
 		consensusCount += 1
-	
+
 #print stats on how many had consensus, etc
 print(str(consensusCount)+"of "+ str(totalBarcodes)+" barcodes had a consensus sequence")
-
+"""
 #close output file   AGCAGCTGCTGGCTAAGCTAGC
