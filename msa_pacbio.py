@@ -10,7 +10,7 @@ from Bio import AlignIO
 from Bio.Align import AlignInfo
 
 #todo in shell script (write driver script) load muscle/latest
-muscle_exe = "/net/gs/vol3/software/modules-repo/RHEL6/muscle/3.8.31"
+muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
 
 os.chdir("/net/dunham/vol2/Cindy/pacbio_git/test_pacbio") #this is temporary, just a test
 outputfile = open("test_output.txt", "w+")
@@ -76,19 +76,22 @@ for key in hq_dict:
 	if len(read_dict[key]) > 1:
 		muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
 		stdout, stderr = muscle_cline(int_file_name)
-		align = AlignIO.read(StringIO(stdout),"fasta")
-		print(align)
+		#align = AlignIO.read(StringIO(stdout),"fasta")
+		#print(align)
 		#os.system(muscle_cline)
 		#os.system("muscle -in "+int_file_name+" -out "+aln_file_name) #string cat before?
 	
 	#get consensus: 
-	alignment = AlignIO.read(aln_file_name, 'fasta')
-	summary_align = AlignInfo.SummaryInfo(alignment)
-	consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
-	consensusOutput = consensus.replace("-","") #not sure if there will be gaps in this one
-	# I think there will be? -cy
+	if os.path.exists(aln_file_name):
+		alignment = AlignIO.read(aln_file_name, 'fasta')
+		summary_align = AlignInfo.SummaryInfo(alignment)
+		consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
+		consensus = str(consensus)
+		print(consensus)
+		consensusOutput = consensus.replace("-","") #not sure if there will be gaps in this one
+		# I think there will be? -cy
 	
-	consensusCount = 0
+		consensusCount = 0
 	"""
 	#if N's: realign (pairwise aligner w/in python) to highest qual
 	if 'N' in consensus:
