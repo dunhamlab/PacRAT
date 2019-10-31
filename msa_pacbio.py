@@ -89,13 +89,12 @@ for key in hq_dict:
 		summary_align = AlignInfo.SummaryInfo(alignment)
 		consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
 		consensus = str(consensus)
-		#print(consensus)
 		consensus = consensus.replace("-","") #not sure if there will be gaps in this one
 		# I think there will be? -cy
 	
 		#consensusCount = 0 # moving this outside the loop, i think...??
 		
-	#if N's: realign (pairwise aligner w/in python) to highest qual
+	#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 	if 'N' in consensus:
 		#write 1st consensus and HQ read to new file
 		int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
@@ -107,10 +106,17 @@ for key in hq_dict:
 		stdout, stderr = muscle_cline_2(int_file_name_2)
 
 		#consensus of new alignment file
-		alignment_2 = AlignIO.read(aln_file_name_2,'fasta')
-		summary_align = AlignInfo.SummaryInfo(alignment_2) 
-		consensus = summary_align.dumb_consensus(threshold=0.5,ambiguous = 'N')
-		consensus = str(consensus)
+		alignment_2 = list(SeqIO.parse(aln_file_name_2,"fasta"))
+		consensus_seq = str(alignment_2[0].seq)
+		hq_seq = str(alignment_2[1].seq)
+		finalSeq = ""
+		lengthOfAlignment = len(consensus_seq)
+		for i in range(lengthOfAlignment):
+			if consensus_seq[i] == "N":
+				finalSeq = finalSeq+hq_seq[i]
+			else:
+				finalSeq = finalSeq + consensus_seq[i]
+		consensus = finalSeq
 		consensus = consensus.replace("-","")
 		consensus_dict[key] = consensus
 		
@@ -121,10 +127,11 @@ for key in hq_dict:
 	else:
 		if len(consensus) > 0: # this is only if there were reads to align. maybe this is something that can be optional
 			consensus_dict[key] = consensus
-			outputfile.write(key"\t"+consensus+"\n")
+			outputfile.write(key+"\t"+consensus+"\n")
 			consensusCount += 1
-	
-	print consensus
+
+	if len(consensus) > 0:
+		print consensus
 #print stats on how many had consensus, etc
 print(str(consensusCount)+"of "+ str(totalBarcodes)+" barcodes had a consensus sequence")
 
