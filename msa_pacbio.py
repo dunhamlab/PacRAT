@@ -16,7 +16,7 @@ os.chdir("/net/dunham/vol2/Cindy/pacbio_git/test_pacbio") #this is temporary, ju
 outputfile = open("test_output.txt", "w+")
 
 #create intermediates directories
-os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments") 
+os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
 os.system("module load muscle/latest")
 
 # TO RUN SUBPROCESS:
@@ -54,6 +54,9 @@ print(str(totalBarcodes) + " barcodes found")
 
 # GIANT FOR LOOP HERE
 # loop through all barcodes
+consensus_dict = {}
+consensusCount = 0
+
 for key in hq_dict:
 	#create fasta file for each barcode
 	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
@@ -76,34 +79,54 @@ for key in hq_dict:
 	if len(read_dict[key]) > 1:
 		muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
 		stdout, stderr = muscle_cline(int_file_name)
-		#align = AlignIO.read(StringIO(stdout),"fasta")
-		#print(align)
-		#os.system(muscle_cline)
-		#os.system("muscle -in "+int_file_name+" -out "+aln_file_name) #string cat before?
+		#print(stdout)
+		#print(stderr)
 	
 	#get consensus: 
+	consensus = ""
 	if os.path.exists(aln_file_name):
 		alignment = AlignIO.read(aln_file_name, 'fasta')
 		summary_align = AlignInfo.SummaryInfo(alignment)
 		consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
 		consensus = str(consensus)
-		print(consensus)
-		consensusOutput = consensus.replace("-","") #not sure if there will be gaps in this one
+		#print(consensus)
+		consensus = consensus.replace("-","") #not sure if there will be gaps in this one
 		# I think there will be? -cy
 	
-		consensusCount = 0
-	"""
+		#consensusCount = 0 # moving this outside the loop, i think...??
+		
 	#if N's: realign (pairwise aligner w/in python) to highest qual
 	if 'N' in consensus:
-		#TODO stuff
-		#second alignment here
-	
+		#write 1st consensus and HQ read to new file
+		int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
+		fasta_2 = open(int_file_name_2,"w+")
+		fasta_2.write(">"+key+"\n"+consensus+"\n"+">"+key+"_hq\n"+hq_dict[key]+"\n")
+		fasta_2.close()
+		aln_file_name_2 = "intermediates/realignments/"+key+".aln"
+		muscle_cline_2 = MuscleCommandline(muscle_exe, input=int_file_name_2, out=aln_file_name_2)
+		stdout, stderr = muscle_cline_2(int_file_name_2)
+
+		#consensus of new alignment file
+		alignment_2 = AlignIO.read(aln_file_name_2,'fasta')
+		summary_align = AlignInfo.SummaryInfo(alignment_2) 
+		consensus = summary_align.dumb_consensus(threshold=0.5,ambiguous = 'N')
+		consensus = str(consensus)
+		consensus = consensus.replace("-","")
+		consensus_dict[key] = consensus
+		
+		outputfile.write(key+"\t"+consensus+"\n")
+		consensusCount += 1
+		
 	#if no Ns: write consensus to output file
 	else:
-		outputfile.write("key\t"+consensus+"\n")
-		consensusCount += 1
-
+		if len(consensus) > 0: # this is only if there were reads to align. maybe this is something that can be optional
+			consensus_dict[key] = consensus
+			outputfile.write(key"\t"+consensus+"\n")
+			consensusCount += 1
+	
+	print consensus
 #print stats on how many had consensus, etc
 print(str(consensusCount)+"of "+ str(totalBarcodes)+" barcodes had a consensus sequence")
-"""
+
 #close output file   AGCAGCTGCTGGCTAAGCTAGC
+outputfile.close()
