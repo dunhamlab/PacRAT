@@ -105,7 +105,7 @@ for key in hq_dict:
 		muscle_cline_2 = MuscleCommandline(muscle_exe, input=int_file_name_2, out=aln_file_name_2)
 		stdout, stderr = muscle_cline_2(int_file_name_2)
 
-		#consensus of new alignment file
+		#consensus of new alignment file (mostly same from previous script)
 		alignment_2 = list(SeqIO.parse(aln_file_name_2,"fasta"))
 		consensus_seq = str(alignment_2[0].seq)
 		hq_seq = str(alignment_2[1].seq)
