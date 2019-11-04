@@ -9,6 +9,8 @@ from StringIO import StringIO
 from Bio import AlignIO
 from Bio.Align import AlignInfo
 from optparse import OptionParser
+from datetime import datetime
+
 
 muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
 
@@ -41,9 +43,10 @@ os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p inte
 outputfile = open(options.out, "w+")
 
 print("Reading barcodes + reads file...")
+#print("Time: "+str(datetime.now())
 # read original assignments into dictionary
 hq_dict = {}
-assignments = open(highQualFile, "r") # min_Q0_assignment.tsv
+assignments = open(options.highQualFile, "r") # min_Q0_assignment.tsv
 for line in assignments:
 	paired_bcread = line.strip().split()
 	hq_dict[paired_bcread[0]] = paired_bcread[1]
@@ -54,7 +57,7 @@ print("Done reading HQ barcodes.")
 # seq quality pairs stored as tuples
 print("Reading all PB reads...")
 read_dict = {}
-reads = open(inputSeqsFile, "r") # seq_barcodes.txt
+reads = open(options.inputSeqsFile, "r") # seq_barcodes.txt
 for line in reads: 
 	paired_bcread = line.strip().split()
 	if paired_bcread[0] in read_dict:
@@ -137,10 +140,13 @@ for key in hq_dict:
 			outputfile.write(key+"\t"+consensus+"\n")
 			consensusCount += 1
 
-	if len(consensus) > 0:
-		print consensus
+# not sure why this line was necessary?
+#	if len(consensus) > 0:
+#		print(consensus)
+		
 #print stats on how many had consensus, etc
-print(str(consensusCount)+"of "+ str(totalBarcodes)+" barcodes had a consensus sequence")
+print(str(consensusCount)+" of "+ str(totalBarcodes)+" barcodes had a consensus sequence")
 
 #close output file   AGCAGCTGCTGGCTAAGCTAGC
 outputfile.close()
+#print("Time: "+str(datetime.now())
