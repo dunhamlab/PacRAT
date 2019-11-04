@@ -8,16 +8,9 @@ from Bio.Align.Applications import MuscleCommandline
 from StringIO import StringIO
 from Bio import AlignIO
 from Bio.Align import AlignInfo
+from optparse import OptionParser
 
-#todo in shell script (write driver script) load muscle/latest
 muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
-
-os.chdir("/net/dunham/vol2/Cindy/pacbio_git/test_pacbio") #this is temporary, just a test
-outputfile = open("test_output.txt", "w+")
-
-#create intermediates directories
-os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
-os.system("module load muscle/latest")
 
 # TO RUN SUBPROCESS:
 # import subprocess
@@ -25,12 +18,32 @@ os.system("module load muscle/latest")
 # subprocess.call(cmd,shell=True)
 # temp file resources: https://docs.python.org/3/library/tempfile.html#tempfile.mkdtemp
 
-# TODO parse options using OptionParser 
+# Option Parser
+parser = OptionParser()
+parser.add_option("-d","--directory", dest="workdir", help="Working directory",default=os.getcwd(),type="string")
+parser.add_option("-o","--out", dest="out", help="Output file",default="Seq_barcodes_aligned.txt",type="string")
+parser.add_option("--highQual", dest="highQualFile", help="File of barcode-seq association, seq from highest quality read",type="string")
+parser.add_option("--inputSeqs", dest="inputSeqsFile", help="Raw barcode, sequence, quality input sequences",type="string")
+
+#TODO implement these
+#parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs reads for analysis",default=2,type="int")
+#parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to determine consensus sequence",default=0.7,type="float")
+#parser.add_option("-a","--aligner", dest="aligner", help="Muscle or clustal",default="muscle",type="string") #todo how can i make it from a list?
+#parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
+(options, args) = parser.parse_args()
+
+os.chdir(options.workdir)
+#os.chdir("/net/dunham/vol2/Cindy/pacbio_git/test_pacbio") #this is temporary, just a test
+
+#create intermediates directories
+os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
+
+outputfile = open(options.out, "w+")
 
 print("Reading barcodes + reads file...")
 # read original assignments into dictionary
 hq_dict = {}
-assignments = open(sys.argv[1], "r") # min_Q0_assignment.tsv
+assignments = open(highQualFile, "r") # min_Q0_assignment.tsv
 for line in assignments:
 	paired_bcread = line.strip().split()
 	hq_dict[paired_bcread[0]] = paired_bcread[1]
@@ -41,7 +54,7 @@ print("Done reading HQ barcodes.")
 # seq quality pairs stored as tuples
 print("Reading all PB reads...")
 read_dict = {}
-reads = open(sys.argv[2], "r") # seq_barcodes.txt
+reads = open(inputSeqsFile, "r") # seq_barcodes.txt
 for line in reads: 
 	paired_bcread = line.strip().split()
 	if paired_bcread[0] in read_dict:
@@ -69,18 +82,13 @@ for key in hq_dict:
 			i = i+1
 		intermediate_file.close()
 	# check if at least CUTOFF number of ccs reads here (i >= CUTOFF) default 3?
-	# hmm where can we find this info?
 	
 	#align files together - first alignment
 	aln_file_name = "intermediates/alignments/" + key + ".aln" # aligned file suffix - i think we can make this whatever - it'll be in fasta format
 	#muscle system call here, write to output file
-	#TODO: options of which aligner to use
-	#shell("clustalo -i {output.intfiles} -o {output.alnfiles}")
 	if len(read_dict[key]) > 1:
 		muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
-		stdout, stderr = muscle_cline(int_file_name)
-		#print(stdout)
-		#print(stderr)
+		stdout, stderr = muscle_cline(int_file_name) #not sure that we need this line at all?
 	
 	#get consensus: 
 	consensus = ""
@@ -89,8 +97,7 @@ for key in hq_dict:
 		summary_align = AlignInfo.SummaryInfo(alignment)
 		consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
 		consensus = str(consensus)
-		consensus = consensus.replace("-","") #not sure if there will be gaps in this one
-		# I think there will be? -cy
+		consensus = consensus.replace("-","") 
 	
 		#consensusCount = 0 # moving this outside the loop, i think...??
 		
