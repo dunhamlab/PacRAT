@@ -136,7 +136,7 @@ for key in hq_dict:
 
 #print stats on how many had consensus, etc
 print("Consensus sequence found for " +str(consensusCount)+" of "+ str(totalBarcodes)+" barcodes")
-print(str(countN)+" of "+ str(consensusCount)+" consensus barcodes had one or more ambiguous positions resolved")
+print(str(Ncount)+" of "+ str(consensusCount)+" consensus barcodes had one or more ambiguous positions resolved")
 
 #close output file  
 outputfile.close()
