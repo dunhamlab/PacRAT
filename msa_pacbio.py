@@ -41,7 +41,7 @@ os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p inte
 outputfile = open(options.out, "w+")
 
 print("Reading barcodes + reads file...")
-print("Time: "+str(datetime.now())
+print("Time: "+str(datetime.now()))
 
 # read original assignments into dictionary
 hq_dict = {}
@@ -135,9 +135,9 @@ for key in hq_dict:
 			consensusCount += 1
 
 #print stats on how many had consensus, etc
-print(str(consensusCount)+" of "+ str(totalBarcodes)+" barcodes had a consensus sequence")
-print(str(countN)+" of "+ str(consensusCount)+" consensus barcodes had a resolved ambiguous position")
+print("Consensus sequence found for " +str(consensusCount)+" of "+ str(totalBarcodes)+" barcodes")
+print(str(countN)+" of "+ str(consensusCount)+" consensus barcodes had one or more ambiguous positions resolved")
 
 #close output file  
 outputfile.close()
-print("Time: "+str(datetime.now())
+print("Time: "+str(datetime.now()))
