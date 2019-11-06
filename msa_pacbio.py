@@ -17,6 +17,8 @@ import multiprocessing
 # TO DO: ADD OPTION TO LOCATE MUSCLE SOFTWARE!!
 muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
 
+print("Starting time: "+str(datetime.now()))
+
 # Option Parser
 parser = OptionParser()
 parser.add_option("-d","--directory", dest="workdir", help="Working directory",default=os.getcwd(),type="string")
@@ -27,7 +29,7 @@ parser.add_option("--inputSeqs", dest="inputSeqsFile", help="Raw barcode, sequen
 parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs reads for analysis",default=2,type="int")
 #parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to determine consensus sequence",default=0.7,type="float")
 #parser.add_option("-a","--aligner", dest="aligner", help="Choose an aligner: muscle (default) or clustal",default="muscle",type="string",choices=["muscle", "clustal"])
-#parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
+parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
 (options, args) = parser.parse_args()
 
 os.chdir(options.workdir)
@@ -38,7 +40,6 @@ os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p inte
 outputfile = open(options.out, "w+")
 
 print("Reading barcodes + reads file...")
-print("Time: "+str(datetime.now()))
 
 # read original assignments into dictionary
 hq_dict = {}
@@ -81,7 +82,7 @@ def loop_bcs(key):
 			intermediate_file.write(item[0]+"\n")
 			i = i+1
 		intermediate_file.close()
-	print("made fasta file")
+	if options.verbose: print("made fasta file")
 
 	# only align if there are at least CUTOFF ccs reads
 	if len(read_dict[key]) >= options.cutoff:
@@ -90,7 +91,7 @@ def loop_bcs(key):
 		#muscle system call here, write to output file
 		muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
 		stdout, stderr = muscle_cline(int_file_name) #not sure that we need this line at all?
-		print("passed cutoff, made first alignment")
+		if options.verbose: print("passed cutoff, made first alignment")
 
 		#get consensus: 
 		consensus = ""
@@ -100,7 +101,7 @@ def loop_bcs(key):
 			consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
 			consensus = str(consensus)
 			consensus = consensus.replace("-","") 
-			print("got consensus 1")	
+			if options.verbose: print("got consensus 1")	
 		
 		#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 		if 'N' in consensus:
@@ -127,36 +128,24 @@ def loop_bcs(key):
 			consensus = finalSeq
 			consensus = consensus.replace("-","")		
 			outputfile.write(key+"\t"+consensus+"\n")
-			#consensusCount += 1
-			#Ncount += 1
-			print("realigned and got new consensus")
+			if options.verbose: print("realigned and got new consensus")
 	
 		#if no Ns: write consensus to output file
 		else:
 			outputfile.write(key+"\t"+consensus+"\n")
-			#consensusCount += 1
 		
-		print("got consensus")
+		if options.verbose: print("got consensus")
 		outputfile.flush()
-		#print(consensusCount)
 
 
 # Parallelization stuff
 num_cores = multiprocessing.cpu_count()
 print("Number of cores: " + str(num_cores))
-#hq_dict_2 = hq_dict
 results = Parallel(n_jobs=num_cores)(delayed(loop_bcs)(key) for key in hq_dict)
-
-
-#print stats on how many had consensus, etc
-print("Consensus sequence found for " +str(consensusCount)+" of "+ str(totalBarcodes)+" barcodes")
-print(str(Ncount)+" of "+ str(consensusCount)+" consensus barcodes had one or more ambiguous positions resolved")
 
 	#close output file  
 outputfile.close()
-print("Time: "+str(datetime.now()))
-
-
+print("Ending time: "+str(datetime.now()))
 
 
 
