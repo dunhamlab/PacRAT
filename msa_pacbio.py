@@ -13,11 +13,11 @@ from optparse import OptionParser
 from datetime import datetime
 from joblib import Parallel, delayed
 import multiprocessing
+import getpass
 
-# TO DO: ADD OPTION TO LOCATE MUSCLE SOFTWARE!!
-muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
 
-print("Starting time: "+str(datetime.now()))
+startTime = str(datetime.now())
+print("Starting time: "+startTime)
 
 # Option Parser
 parser = OptionParser()
@@ -33,6 +33,10 @@ parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",
 (options, args) = parser.parse_args()
 
 os.chdir(options.workdir)
+
+# TO DO: ADD OPTION TO LOCATE MUSCLE SOFTWARE!!
+#muscle_exe = options.aligner
+muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
 
 #create intermediates directories
 os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
@@ -145,8 +149,13 @@ results = Parallel(n_jobs=num_cores)(delayed(loop_bcs)(key) for key in hq_dict)
 
 	#close output file  
 outputfile.close()
-print("Ending time: "+str(datetime.now()))
+endTime = str(datetime.now())
+print("Ending time: "+endTime)
 
+#remove later?
+recordTime = open("test/run_times.tsv","a+")
+recordTime.write(str(getpass.getuser())+"\t"+startTime+"\t"+endTime+"\t"+str(num_cores)+"\n")
+recordTime.close()
 
 
 
