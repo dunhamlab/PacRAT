@@ -1,8 +1,8 @@
 #!/bin/bash
 #$ -S /bin/bash
-#$ -l mfree=12G -l h_rt=0:24:0:0
+#$ -l mfree=16G -l h_rt=0:24:0:0
 #$ -cwd
-#$ -N msa_pacbio
+#$ -N dbl_msa_pacbio
 #$ -o /net/dunham/vol2/Cindy/pacbio_git/Subassembly_PB_IndelCorrection/test
 #$ -e /net/dunham/vol2/Cindy/pacbio_git/Subassembly_PB_IndelCorrection/test
 

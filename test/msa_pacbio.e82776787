@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "msa_pacbio.py", line 156, in <module>
+    recordTime = open("test/run_times.tsv","a+")
+FileNotFoundError: [Errno 2] No such file or directory: 'test/run_times.tsv'
