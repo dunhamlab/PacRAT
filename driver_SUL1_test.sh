@@ -10,11 +10,6 @@
 # -o /net/dunham/vol2/Clara/projects/Subassembly_PB_IndelCorrection/test
 # -e /net/dunham/vol2/Clara/projects/Subassembly_PB_IndelCorrection/test
 
-# module load python/2.7.3 #3.5.2
-# module load numpy/1.7.0
-# module load biopython/1.63
-# module load muscle/3.8.31
-
 module load python/3.5.2
 module load muscle/3.8.31
 
