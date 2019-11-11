@@ -54,25 +54,30 @@ for line in assignments:
 assignments.close()
 print("Done reading HQ barcodes.")
 
-# read all ccs reads into dict: BC: [(seq,qual), (seq,qual)...]
+# read all ccs reads into dict: BC: [seq1, seq2...]
 # seq quality pairs stored as tuples
 print("Reading all PB reads...")
 read_dict = {}
 reads = open(options.inputSeqsFile, "r") # seq_barcodes.txt
 for line in reads: 
 	paired_bcread = line.strip().split()
+	#if paired_bcread[0] in ["AAAACCTTAT","AAAGACAAAA","AAAGATCCAG"]: debugging
+	#	print(paired_bcread[1])
 	if paired_bcread[0] in read_dict:
-		read_dict[paired_bcread[0]].append((paired_bcread[1],paired_bcread[2]))
+		read_dict[paired_bcread[0]].append(paired_bcread[1])
 	else:
-		read_dict[paired_bcread[0]] = [(paired_bcread[1],paired_bcread[2])]
+		read_dict[paired_bcread[0]] = [paired_bcread[1]]
 reads.close()
 totalBarcodes = len(hq_dict.keys())
-print(str(totalBarcodes) + " barcodes found")
+print(str(totalBarcodes) + " barcodes found in hq file")
+totalBarcodes2 = len(read_dict.keys())
+print(str(totalBarcodes2) + " barcodes found in other file")
 
 
 # Giant for loop, now as a function
 def loop_bcs(key):
-	bc_entry = read_dict[key] #list of tuples
+	bc_entry = read_dict[key] #list of sequences
+	if len(bc_entry) == 0: print(key+" barcode not found in dictionary")
 	#create fasta file for each barcode: 
 	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
 	if not os.path.isfile(int_file_name):	
@@ -80,7 +85,7 @@ def loop_bcs(key):
 		i = 0       
 		for item in bc_entry: #add each read for a particular barcode in fasta format
 			intermediate_file.write(">" + key + "_" + str(i) + "\n")
-			intermediate_file.write(item[0]+"\n")
+			intermediate_file.write(item+"\n")
 			i = i+1
 		intermediate_file.close()
 	if options.verbose: print("made fasta file")
@@ -88,7 +93,8 @@ def loop_bcs(key):
 	# only align if there are at least CUTOFF ccs reads
 	if len(bc_entry) >= options.cutoff:
 		if len(bc_entry) == 1: #special case, don't need to align here
-			outputfile.write(key+"\t"+str(bc_entry[1][0])+"\n")
+			#print(bc_entry)
+			outputfile.write(key+"\t"+bc_entry[0]+"\n")
 			
 		else: 
 			#align files together - first alignment
