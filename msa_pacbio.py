@@ -69,9 +69,8 @@ reads.close()
 totalBarcodes = len(hq_dict.keys())
 print(str(totalBarcodes) + " barcodes found")
 
-
-consensusCount = 0
-Ncount = 0
+#consensusCount = 0
+#Ncount = 0
 
 # Giant for loop, now as a function
 def loop_bcs(key):
@@ -102,7 +101,7 @@ def loop_bcs(key):
 		if os.path.exists(aln_file_name): #probably should have an else here that throws an error, but it would be better to check that the muscle stderr is empty
 			alignment = AlignIO.read(aln_file_name, 'fasta')
 			summary_align = AlignInfo.SummaryInfo(alignment)
-			consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
+			consensus = summary_align.dumb_consensus(threshold=0.6,  ambiguous='N')
 			consensus = str(consensus)
 			consensus = consensus.replace("-","") 
 			if options.verbose: print("got consensus 1")	
@@ -147,91 +146,8 @@ num_cores = multiprocessing.cpu_count()
 print("Number of cores: " + str(num_cores))
 results = Parallel(n_jobs=num_cores)(delayed(loop_bcs)(key) for key in hq_dict)
 
-	#close output file  
+# close output file  
 outputfile.close()
 endTime = str(datetime.now())
 print("Ending time: "+endTime)
 
-#remove later?
-recordTime = open("test/run_times.tsv","a+")
-recordTime.write(str(getpass.getuser())+"\t"+startTime+"\t"+endTime+"\t"+str(num_cores)+"\n")
-recordTime.close()
-
-
-
-# All the old stuff because I'm too scared to delete it. I know, I know, we have a history/version control....still paranoid :P
-
-# consensusCount = 0
-# Ncount = 0
-# 
-# # loop through all barcodes
-# for key in hq_dict:
-# 	# TODO have a verbose option that prints barcodes and muscle stdout
-# 	#create fasta file for each barcode
-# 	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
-# 	if not os.path.isfile(int_file_name):	
-# 		intermediate_file = open(int_file_name, "w+")
-# 		i = 0       
-# 		for item in read_dict[key]: #add each read for a particular barcode in fasta format
-# 			intermediate_file.write(">" + key + "_" + str(i) + "\n")
-# 			intermediate_file.write(item[0]+"\n")
-# 			i = i+1
-# 		intermediate_file.close()
-# 	
-# 	# only align if there are at least CUTOFF ccs reads
-# 	if len(read_dict[key]) >= options.cutoff:
-# 		#align files together - first alignment
-# 		aln_file_name = "intermediates/alignments/" + key + ".aln" # should this be os.path.join?
-# 		#muscle system call here, write to output file
-# 		muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
-# 		stdout, stderr = muscle_cline(int_file_name) #not sure that we need this line at all?
-# 	
-# 		#get consensus: 
-# 		consensus = ""
-# 		if os.path.exists(aln_file_name): #probably should have an else here that throws an error, but it would be better to check that the muscle stderr is empty
-# 			alignment = AlignIO.read(aln_file_name, 'fasta')
-# 			summary_align = AlignInfo.SummaryInfo(alignment)
-# 			consensus = summary_align.dumb_consensus(threshold=0.5,  ambiguous='N') #threshold: default 0.7
-# 			consensus = str(consensus)
-# 			consensus = consensus.replace("-","") 
-# 			
-# 		#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
-# 		if 'N' in consensus:
-# 			#write 1st consensus and HQ read to new file
-# 			int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
-# 			fasta_2 = open(int_file_name_2,"w+")
-# 			fasta_2.write(">"+key+"\n"+consensus+"\n"+">"+key+"_hq\n"+hq_dict[key]+"\n")
-# 			fasta_2.close()
-# 			aln_file_name_2 = "intermediates/realignments/"+key+".aln"
-# 			muscle_cline_2 = MuscleCommandline(muscle_exe, input=int_file_name_2, out=aln_file_name_2)
-# 			stdout, stderr = muscle_cline_2(int_file_name_2)
-# 
-# 			#consensus of new alignment file (mostly same from previous script)
-# 			alignment_2 = list(SeqIO.parse(aln_file_name_2,"fasta"))
-# 			consensus_seq = str(alignment_2[0].seq)
-# 			hq_seq = str(alignment_2[1].seq)
-# 			finalSeq = ""
-# 			lengthOfAlignment = len(consensus_seq)
-# 			for i in range(lengthOfAlignment):
-# 				if consensus_seq[i] == "N":
-# 					finalSeq = finalSeq+hq_seq[i]
-# 				else:
-# 					finalSeq = finalSeq + consensus_seq[i]
-# 			consensus = finalSeq
-# 			consensus = consensus.replace("-","")		
-# 			outputfile.write(key+"\t"+consensus+"\n")
-# 			consensusCount += 1
-# 			Ncount += 1
-# 		
-# 		#if no Ns: write consensus to output file
-# 		else:
-# 			outputfile.write(key+"\t"+consensus+"\n")
-# 			consensusCount += 1
-# 
-# #print stats on how many had consensus, etc
-# print("Consensus sequence found for " +str(consensusCount)+" of "+ str(totalBarcodes)+" barcodes")
-# print(str(Ncount)+" of "+ str(consensusCount)+" consensus barcodes had one or more ambiguous positions resolved")
-# 
-# #close output file  
-# outputfile.close()
-# print("Time: "+str(datetime.now()))
