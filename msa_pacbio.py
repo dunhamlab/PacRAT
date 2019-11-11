@@ -144,10 +144,15 @@ def loop_bcs(key):
 # Parallelization stuff
 num_cores = multiprocessing.cpu_count()
 print("Number of cores: " + str(num_cores))
-results = Parallel(n_jobs=num_cores)(delayed(loop_bcs)(key) for key in hq_dict)
+results = Parallel(n_jobs=(num_cores*2))(delayed(loop_bcs)(key) for key in hq_dict)
 
 # close output file  
 outputfile.close()
 endTime = str(datetime.now())
 print("Ending time: "+endTime)
 
+
+#remove later?
+recordTime = open("run_times.tsv","a+")
+recordTime.write(str(getpass.getuser())+"\t"+startTime+"\t"+endTime+"\t"+str(num_cores)+"\n")
+recordTime.close()
