@@ -73,11 +73,12 @@ print(str(totalBarcodes) + " barcodes found in hq file")
 totalBarcodes2 = len(read_dict.keys())
 print(str(totalBarcodes2) + " barcodes found in other file")
 
+#consensus_dict = {}
 
 # Giant for loop, now as a function
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
-	if len(bc_entry) == 0: print(key+" barcode not found in dictionary")
+	#if len(bc_entry) == 0: print(key+" barcode not found in dictionary")
 	#create fasta file for each barcode: 
 	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
 	if not os.path.isfile(int_file_name):	
@@ -93,8 +94,8 @@ def loop_bcs(key):
 	# only align if there are at least CUTOFF ccs reads
 	if len(bc_entry) >= options.cutoff:
 		if len(bc_entry) == 1: #special case, don't need to align here
-			#print(bc_entry)
 			outputfile.write(key+"\t"+bc_entry[0]+"\n")
+			#consensus_dict[key] = bc_entry[0]
 			
 		else: 
 			#align files together - first alignment
@@ -139,23 +140,31 @@ def loop_bcs(key):
 				consensus = finalSeq
 				consensus = consensus.replace("-","")		
 				outputfile.write(key+"\t"+consensus+"\n")
+				#consensus_dict[key] = consensus
 				if options.verbose: print("realigned and got new consensus")
 	
 			#if no Ns: write consensus to output file
 			else:
 				outputfile.write(key+"\t"+consensus+"\n")
+				#consensus_dict[key] = consensus
 		
 			if options.verbose: print("got consensus")
-			outputfile.flush()
+		outputfile.flush()
 
 
 # Parallelization stuff
 num_cores = multiprocessing.cpu_count()
 print("Number of cores: " + str(num_cores))
-results = Parallel(n_jobs=(num_cores*2))(delayed(loop_bcs)(key) for key in hq_dict)
+results = Parallel(n_jobs=(num_cores))(delayed(loop_bcs)(key) for key in hq_dict)
 
+# print all consensus sequences to outfile
+#totalCons = len(consensus_dict.keys())
+#print("Sequences found for " + str(totalCons) + " barcodes")
+#for bc, value in consensus_dict.items():
+#	outputfile.write(bc+"\t"+value+"\n")
 # close output file  
 outputfile.close()
+
 endTime = str(datetime.now())
 print("Ending time: "+endTime)
 
