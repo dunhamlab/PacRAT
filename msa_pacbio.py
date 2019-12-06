@@ -110,7 +110,7 @@ def loop_bcs(key):
 			if os.path.exists(aln_file_name): #probably should have an else here that throws an error, but it would be better to check that the muscle stderr is empty
 				alignment = AlignIO.read(aln_file_name, 'fasta')
 				summary_align = AlignInfo.SummaryInfo(alignment)
-				consensus = summary_align.dumb_consensus(threshold=options.thresh,  ambiguous='N')
+				consensus = summary_align.gap_consensus(threshold=options.thresh,  ambiguous='N')
 				consensus = str(consensus)
 				consensus = consensus.replace("-","") 
 				if options.verbose: print("got consensus 1")	
