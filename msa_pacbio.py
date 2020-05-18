@@ -120,11 +120,17 @@ def loop_bcs(key):
 				#write 1st consensus and HQ read to new file
 				int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
 				fasta_2 = open(int_file_name_2,"w+")
-				fasta_2.write(">"+key+"\n"+consensus+"\n"+">"+key+"_hq\n"+hq_dict[key]+"\n")
+				fasta_2.write(">"+key+"\n"+consensus)
 				fasta_2.close()
+				fasta_hq_name = os.path.join("intermediates/fasta_2/" + key + "_hq.fasta")
+				fasta_hq = open(fasta_hq_name,"w+")
+				fasta_hq.write(">"+key+"_hq\n"+hq_dict[key])
+				fasta_hq.close()
 				aln_file_name_2 = "intermediates/realignments/"+key+".aln"
-				muscle_cline_2 = MuscleCommandline(muscle_exe, input=int_file_name_2, out=aln_file_name_2)
-				stdout, stderr = muscle_cline_2(int_file_name_2)
+				cmd = "needle " + int_file_name_2 + " " + fasta_hq_name + " -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
+				os.system(cmd)
+				#muscle_cline_2 = MuscleCommandline(muscle_exe, input=int_file_name_2, out=aln_file_name_2)
+				#stdout, stderr = muscle_cline_2(int_file_name_2)
 
 				#consensus of new alignment file (mostly same from previous script)
 				alignment_2 = list(SeqIO.parse(aln_file_name_2,"fasta"))
