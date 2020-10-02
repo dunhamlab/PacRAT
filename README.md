@@ -2,7 +2,7 @@
 
 Correcting indels to PacBio reads for subassembly
 
-#### Running instructions
+#### Running instructions on GS Cluster
 qsub ./driver_SUL1_test.sh
 
 #### Running locally
