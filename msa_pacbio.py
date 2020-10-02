@@ -30,13 +30,18 @@ parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs re
 parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to determine consensus sequence",default=0.7,type="float")
 #parser.add_option("-a","--aligner", dest="aligner", help="Choose an aligner: muscle (default) or clustal",default="muscle",type="string",choices=["muscle", "clustal"])
 parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
+parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
+parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
+
 (options, args) = parser.parse_args()
 
 os.chdir(options.workdir)
 
-# TO DO: ADD OPTION TO LOCATE MUSCLE SOFTWARE!!
-#muscle_exe = options.aligner
-muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
+#muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
+#muscle_exe = "../../muscle/muscle"
+#needle_exe = "../../emboss/EMBOSS-6.6.0/emboss/needle"
+muscle_exe = options.muscle
+needle_exe = options.needle
 
 #create intermediates directories
 os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
@@ -127,7 +132,7 @@ def loop_bcs(key):
 				fasta_hq.write(">"+key+"_hq\n"+hq_dict[key])
 				fasta_hq.close()
 				aln_file_name_2 = "intermediates/realignments/"+key+".aln"
-				cmd = "needle " + int_file_name_2 + " " + fasta_hq_name + " -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
+				cmd = needle_exe + " " + int_file_name_2 + " " + fasta_hq_name + " -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
 				os.system(cmd)
 				#muscle_cline_2 = MuscleCommandline(muscle_exe, input=int_file_name_2, out=aln_file_name_2)
 				#stdout, stderr = muscle_cline_2(int_file_name_2)
@@ -161,7 +166,7 @@ def loop_bcs(key):
 # Parallelization stuff
 num_cores = multiprocessing.cpu_count()
 print("Number of cores: " + str(num_cores))
-results = Parallel(n_jobs=(num_cores))(delayed(loop_bcs)(key) for key in hq_dict)
+results = Parallel(n_jobs=(num_cores),prefer="threads")(delayed(loop_bcs)(key) for key in hq_dict)
 
 # print all consensus sequences to outfile
 #totalCons = len(consensus_dict.keys())
