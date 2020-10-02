@@ -14,3 +14,12 @@ For the EMBOSS file, unzip it `tar -zxvf emboss_filename_here.tar.gz`. Through t
   
 In your driver script, be sure to specify the location of each software.
 
+	**-d**	**--directory**	Specify working directory where intermediate and output files will be located  
+	**-o**	**--out**	Specify the name of the final output file  (default = Seq_barcodes_aligned.txt)  
+	**--highQual**		File of barcode-variant association, where the variant is the highest quality read  
+	**--inputSeqs**		Raw barcode, variant, and quality of sequencies  
+	**-c**	**--cutoff**	Minimum number of CCS reads needed in order to retain reads associated with specific barcodes (default = 2)  
+	**-t**	**--threshold**	Minimum frequency threshold for calling consensus reads (default = 0.7)  
+	**-v**	**--verbose**	Debug output  
+	**-m**	**--muscle**	Location of compiled/extracted MUSCLE program
+	**-n**	**--needle**	Location of compiled Needle program  
