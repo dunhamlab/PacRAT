@@ -1,6 +1,6 @@
 #!/bin/bash
 #$ -S /bin/bash
-#$ -l mfree=16G -pe serial 4 -l h_rt=0:24:0:0
+#$ -l mfree=4G -pe serial 16 -l h_rt=0:24:0:0
 #$ -cwd
 #$ -N msa_pacbio
 
