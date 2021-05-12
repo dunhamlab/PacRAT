@@ -132,7 +132,7 @@ def loop_bcs(key):
 				fasta_hq.write(">"+key+"_hq\n"+hq_dict[key])
 				fasta_hq.close()
 				aln_file_name_2 = "intermediates/realignments/"+key+".aln"
-				cmd = needle_exe + " " + int_file_name_2 + " " + fasta_hq_name + " -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
+				cmd = needle_exe + " " + int_file_name_2 + " " + fasta_hq_name + " -auto -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
 				os.system(cmd)
 				#muscle_cline_2 = MuscleCommandline(muscle_exe, input=int_file_name_2, out=aln_file_name_2)
 				#stdout, stderr = muscle_cline_2(int_file_name_2)
