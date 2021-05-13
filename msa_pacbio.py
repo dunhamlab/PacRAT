@@ -32,6 +32,9 @@ parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to 
 parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
 parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
 parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
+parser.add_option("--cont", dest="cont", help="Continue working after disrupted run",default=False,action="store_true")
+
+
 
 (options, args) = parser.parse_args()
 
@@ -78,8 +81,35 @@ print(str(totalBarcodes) + " barcodes found in hq file")
 totalBarcodes2 = len(read_dict.keys())
 print(str(totalBarcodes2) + " barcodes found in other file") 
 
+# if needed to pick up where script broke 
+# only run if --continue is included
+progress_file_name = "progress_file.txt" # create progress file that writes barcode each time loop_bcs function is run
+if options.cont:
+	"removing barcodes..."
+	if os.path.exists(progress_file_name):
+		prog_file = open(progress_file_name,"r")
+		remove_keys = [] # list of keys to remove from dict because it's already been processed
+		for line in prog_file:
+			line = line.strip()
+			if line != "":
+				remove_keys.append(line)
+	# remove barcodes in hq_dict if it's already been processed through loop_bcs function
+		for bc in remove_keys:
+			if bc in hq_dict:
+				hq_dict.pop(bc, None)
+		totalBarcodes3 = len(hq_dict.keys())
+		new_totalBarcodes = totalBarcodes - totalBarcodes3
+		print(str(new_totalBarcodes) + " barcodes removed from hq file -- already processed.")
+else: # if --continue is not included, delete the progress file from the last run.
+	if os.path.exists(progress_file_name):
+		os.remove(progress_file_name)
+
 # Giant for loop, now as a function
 def loop_bcs(key):
+	if not os.path.exists(progress_file_name):
+		progress_file = open(progress_file_name,"w+")
+	else:
+		progress_file = open(progress_file_name, "a")
 	bc_entry = read_dict[key] #list of sequences
 	#if len(bc_entry) == 0: print(key+" barcode not found in dictionary")
 	#create fasta file for each barcode: 
@@ -92,7 +122,7 @@ def loop_bcs(key):
 			intermediate_file.write(item+"\n")
 			i = i+1
 		intermediate_file.close()
-	if options.verbose: print("made fasta file" + str(key))
+	if options.verbose: print("made fasta file " + str(key))
 
 	# only align if there are at least CUTOFF ccs reads
 	if len(bc_entry) >= options.cutoff:
@@ -106,7 +136,7 @@ def loop_bcs(key):
 			#muscle system call here, write to output file
 			muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
 			stdout, stderr = muscle_cline(int_file_name)
-			if options.verbose: print("passed cutoff, made first alignment" + str(key))
+			if options.verbose: print("passed cutoff, made first alignment " + str(key))
 
 			#get consensus: 
 			consensus = ""
@@ -116,7 +146,7 @@ def loop_bcs(key):
 				consensus = summary_align.gap_consensus(threshold=options.thresh,  ambiguous='N')
 				consensus = str(consensus)
 				consensus = consensus.replace("-","") 
-				if options.verbose: print("got consensus 1" + str(key))	
+				if options.verbose: print("got consensus 1 " + str(key))	
 		
 			#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 			if 'N' in consensus:
@@ -150,25 +180,25 @@ def loop_bcs(key):
 				consensus = consensus.replace("-","")		
 				outputfile.write(key+"\t"+consensus+"\n")
 				#consensus_dict[key] = consensus
-				if options.verbose: print("realigned and got new consensus" + str(key)))
+				if options.verbose: print("realigned and got new consensus " + str(key))
 	
 			#if no Ns: write consensus to output file
 			else:
 				outputfile.write(key+"\t"+consensus+"\n")
 				#consensus_dict[key] = consensus
 		
-			if options.verbose: print("got consensus" + str(key))
+			if options.verbose: print("got consensus " + str(key))
 		outputfile.flush()
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
 		under_cutoff_bcs_name = "barcodes_below_cutoff.txt"
-		if !os.path.exists(under_cutoff_cs_name):
+		if not os.path.exists(under_cutoff_cs_name):
 			cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
 			cutoff_bcs_file.write(key + "\n")
 		else:
 			cutoff_bcs_file.write(key + "\n")
+	progress_file.write(key+"\n")
+	progress_file.flush()
 			
-
-
 # Parallelization stuff
 num_cores = multiprocessing.cpu_count()
 print("Number of cores: " + str(num_cores))
