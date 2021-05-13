@@ -76,9 +76,7 @@ reads.close()
 totalBarcodes = len(hq_dict.keys())
 print(str(totalBarcodes) + " barcodes found in hq file")
 totalBarcodes2 = len(read_dict.keys())
-print(str(totalBarcodes2) + " barcodes found in other file")
-
-#consensus_dict = {}
+print(str(totalBarcodes2) + " barcodes found in other file") 
 
 # Giant for loop, now as a function
 def loop_bcs(key):
@@ -86,7 +84,7 @@ def loop_bcs(key):
 	#if len(bc_entry) == 0: print(key+" barcode not found in dictionary")
 	#create fasta file for each barcode: 
 	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
-	if not os.path.isfile(int_file_name):	
+	if not os.path.isfile(int_file_name):
 		intermediate_file = open(int_file_name, "w+")
 		i = 0       
 		for item in bc_entry: #add each read for a particular barcode in fasta format
@@ -94,7 +92,7 @@ def loop_bcs(key):
 			intermediate_file.write(item+"\n")
 			i = i+1
 		intermediate_file.close()
-	if options.verbose: print("made fasta file")
+	if options.verbose: print("made fasta file" + str(key))
 
 	# only align if there are at least CUTOFF ccs reads
 	if len(bc_entry) >= options.cutoff:
@@ -108,7 +106,7 @@ def loop_bcs(key):
 			#muscle system call here, write to output file
 			muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
 			stdout, stderr = muscle_cline(int_file_name)
-			if options.verbose: print("passed cutoff, made first alignment")
+			if options.verbose: print("passed cutoff, made first alignment" + str(key))
 
 			#get consensus: 
 			consensus = ""
@@ -118,7 +116,7 @@ def loop_bcs(key):
 				consensus = summary_align.gap_consensus(threshold=options.thresh,  ambiguous='N')
 				consensus = str(consensus)
 				consensus = consensus.replace("-","") 
-				if options.verbose: print("got consensus 1")	
+				if options.verbose: print("got consensus 1" + str(key))	
 		
 			#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 			if 'N' in consensus:
@@ -152,15 +150,23 @@ def loop_bcs(key):
 				consensus = consensus.replace("-","")		
 				outputfile.write(key+"\t"+consensus+"\n")
 				#consensus_dict[key] = consensus
-				if options.verbose: print("realigned and got new consensus")
+				if options.verbose: print("realigned and got new consensus" + str(key)))
 	
 			#if no Ns: write consensus to output file
 			else:
 				outputfile.write(key+"\t"+consensus+"\n")
 				#consensus_dict[key] = consensus
 		
-			if options.verbose: print("got consensus")
+			if options.verbose: print("got consensus" + str(key))
 		outputfile.flush()
+	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
+		under_cutoff_bcs_name = "barcodes_below_cutoff.txt"
+		if !os.path.exists(under_cutoff_cs_name):
+			cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
+			cutoff_bcs_file.write(key + "\n")
+		else:
+			cutoff_bcs_file.write(key + "\n")
+			
 
 
 # Parallelization stuff
