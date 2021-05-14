@@ -111,10 +111,10 @@ else: # if --continue is not included, delete the progress file from the last ru
 	if os.path.exists(progress_file_name):
 		os.remove(progress_file_name)
 		if options.verbose: print("Deleted old progress file")
-		os.system("wc -l " + progress_file_name)
 	cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
 	if options.verbose: print("Created files to track barcodes that don't meet threshold")
 
+# creates or appends to progress file
 if not os.path.exists(progress_file_name):
 	progress_file = open(progress_file_name,"w+")
 else:
@@ -123,7 +123,6 @@ else:
 # Giant for loop, now as a function
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
-	#if len(bc_entry) == 0: print(key+" barcode not found in dictionary")
 	#create fasta file for each barcode: 
 	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
 	if not os.path.isfile(int_file_name): 
@@ -174,8 +173,6 @@ def loop_bcs(key):
 				aln_file_name_2 = "intermediates/realignments/"+key+".aln"
 				cmd = needle_exe + " " + int_file_name_2 + " " + fasta_hq_name + " -auto -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
 				os.system(cmd)
-				#muscle_cline_2 = MuscleCommandline(muscle_exe, input=int_file_name_2, out=aln_file_name_2)
-				#stdout, stderr = muscle_cline_2(int_file_name_2)
 
 				#consensus of new alignment file (mostly same from previous script)
 				alignment_2 = list(SeqIO.parse(aln_file_name_2,"fasta"))
@@ -203,23 +200,9 @@ def loop_bcs(key):
 		outputfile.flush()
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
 		cutoff_bcs_file.write(key+"\n")
-		#under_cutoff_bcs_name = "barcodes_below_cutoff.txt"
-# 		if not os.path.exists(under_cutoff_bcs_name) and not options.cont:
-# 			cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
-# 			cutoff_bcs_file.write(key + "\n")
-# 			cutoff_bcs_file.close()
-# 		else if os.path.exists(under_cutoff_bcs_name) and options.cont:
-# 			cutoff_bcs_file = open(under_cutoff_bcs_name, "a")
-# 			cutoff_bcs_file.write(key + "\n")
-# 			cutoff_bcs_file.close()			
-# 	if not os.path.exists(progress_file_name):
-# 		progress_file = open(progress_file_name,"w+")
-# 	else:
-# 		progress_file = open(progress_file_name, "a")
 	progress_file.write(key+"\n")
 	print("Wrote " + key + " to progress file")
 	progress_file.flush()
-#	progress_file.close()
 			
 # Parallelization stuff
 num_cores = multiprocessing.cpu_count()
