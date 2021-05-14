@@ -49,7 +49,10 @@ needle_exe = options.needle
 #create intermediates directories
 os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
 
-outputfile = open(options.out, "w+")
+if options.cont:
+	outputfile = open(options.out,"a")
+else:
+	outputfile = open(options.out, "w+")
 
 print("Reading barcodes + reads file...")
 
@@ -82,10 +85,12 @@ totalBarcodes2 = len(read_dict.keys())
 print(str(totalBarcodes2) + " barcodes found in other file") 
 
 # if needed to pick up where script broke 
-# only run if --continue is included
+# only run if --cont is included
+# deletes progress file if --cont is not included; removes barcodes from hq_dict if --cont is included
+# appends to barcode cutoff file if --cont is included; opens & wipes barcode cutoff file if not
 progress_file_name = "progress_file.txt" # create progress file that writes barcode each time loop_bcs function is run
+under_cutoff_bcs_name = "barcodes_below_cutoff.txt" # barcodes that miss the cutoff
 if options.cont:
-	"removing barcodes..."
 	if os.path.exists(progress_file_name):
 		prog_file = open(progress_file_name,"r")
 		remove_keys = [] # list of keys to remove from dict because it's already been processed
@@ -99,18 +104,29 @@ if options.cont:
 				hq_dict.pop(bc, None)
 		totalBarcodes3 = len(hq_dict.keys())
 		new_totalBarcodes = totalBarcodes - totalBarcodes3
-		print(str(new_totalBarcodes) + " barcodes removed from hq file -- already processed.")
+		if options.verbose: print(str(new_totalBarcodes) + " barcodes removed from hq file -- already processed.")
+	if os.path.exists(under_cutoff_bcs_name):
+		cutoff_bcs_file = open(under_cutoff_bcs_name, "a")
 else: # if --continue is not included, delete the progress file from the last run.
 	if os.path.exists(progress_file_name):
 		os.remove(progress_file_name)
+		if options.verbose: print("Deleted old progress file")
+		os.system("wc -l " + progress_file_name)
+	cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
+	if options.verbose: print("Created files to track barcodes that don't meet threshold")
 
+if not os.path.exists(progress_file_name):
+	progress_file = open(progress_file_name,"w+")
+else:
+	progress_file = open(progress_file_name, "a")
+	
 # Giant for loop, now as a function
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
 	#if len(bc_entry) == 0: print(key+" barcode not found in dictionary")
 	#create fasta file for each barcode: 
 	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
-	if not os.path.isfile(int_file_name):
+	if not os.path.isfile(int_file_name): 
 		intermediate_file = open(int_file_name, "w+")
 		i = 0       
 		for item in bc_entry: #add each read for a particular barcode in fasta format
@@ -186,22 +202,24 @@ def loop_bcs(key):
 			if options.verbose: print("got consensus " + str(key))
 		outputfile.flush()
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
-		under_cutoff_bcs_name = "barcodes_below_cutoff.txt"
-		if not os.path.exists(under_cutoff_bcs_name):
-			cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
-			cutoff_bcs_file.write(key + "\n")
-			cutoff_bcs_file.close()
-		else:
-			cutoff_bcs_file = open(under_cutoff_bcs_name, "a")
-			cutoff_bcs_file.write(key + "\n")
-			cutoff_bcs_file.close()
-	if not os.path.exists(progress_file_name):
-		progress_file = open(progress_file_name,"w+")
-	else:
-		progress_file = open(progress_file_name, "a")
+		cutoff_bcs_file.write(key+"\n")
+		#under_cutoff_bcs_name = "barcodes_below_cutoff.txt"
+# 		if not os.path.exists(under_cutoff_bcs_name) and not options.cont:
+# 			cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
+# 			cutoff_bcs_file.write(key + "\n")
+# 			cutoff_bcs_file.close()
+# 		else if os.path.exists(under_cutoff_bcs_name) and options.cont:
+# 			cutoff_bcs_file = open(under_cutoff_bcs_name, "a")
+# 			cutoff_bcs_file.write(key + "\n")
+# 			cutoff_bcs_file.close()			
+# 	if not os.path.exists(progress_file_name):
+# 		progress_file = open(progress_file_name,"w+")
+# 	else:
+# 		progress_file = open(progress_file_name, "a")
 	progress_file.write(key+"\n")
+	print("Wrote " + key + " to progress file")
 	progress_file.flush()
-	progress_file.close()
+#	progress_file.close()
 			
 # Parallelization stuff
 num_cores = multiprocessing.cpu_count()
@@ -215,6 +233,8 @@ results = Parallel(n_jobs=(num_cores),prefer="threads")(delayed(loop_bcs)(key) f
 #	outputfile.write(bc+"\t"+value+"\n")
 # close output file  
 outputfile.close()
+progress_file.close()
+cutoff_bcs_file.close()
 
 endTime = str(datetime.now())
 print("Ending time: "+endTime)
