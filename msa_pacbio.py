@@ -106,10 +106,6 @@ else: # if --continue is not included, delete the progress file from the last ru
 
 # Giant for loop, now as a function
 def loop_bcs(key):
-	if not os.path.exists(progress_file_name):
-		progress_file = open(progress_file_name,"w+")
-	else:
-		progress_file = open(progress_file_name, "a")
 	bc_entry = read_dict[key] #list of sequences
 	#if len(bc_entry) == 0: print(key+" barcode not found in dictionary")
 	#create fasta file for each barcode: 
@@ -191,13 +187,21 @@ def loop_bcs(key):
 		outputfile.flush()
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
 		under_cutoff_bcs_name = "barcodes_below_cutoff.txt"
-		if not os.path.exists(under_cutoff_cs_name):
+		if not os.path.exists(under_cutoff_bcs_name):
 			cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
 			cutoff_bcs_file.write(key + "\n")
+			cutoff_bcs_file.close()
 		else:
+			cutoff_bcs_file = open(under_cutoff_bcs_name, "a")
 			cutoff_bcs_file.write(key + "\n")
+			cutoff_bcs_file.close()
+	if not os.path.exists(progress_file_name):
+		progress_file = open(progress_file_name,"w+")
+	else:
+		progress_file = open(progress_file_name, "a")
 	progress_file.write(key+"\n")
 	progress_file.flush()
+	progress_file.close()
 			
 # Parallelization stuff
 num_cores = multiprocessing.cpu_count()
