@@ -201,7 +201,7 @@ def loop_bcs(key):
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
 		cutoff_bcs_file.write(key+"\n")
 	progress_file.write(key+"\n")
-	print("Wrote " + key + " to progress file")
+	if options.verbose: print("Wrote " + key + " to progress file")
 	progress_file.flush()
 			
 # Parallelization stuff
