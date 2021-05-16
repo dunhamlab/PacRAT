@@ -31,8 +31,7 @@ conda activate msa_ccs
 echo "Environment activated"
 
 # for running in cluster
-python msa_pacbio.py -d ./output \ #this will change working directory to ./output folder
-	-o SUL1_test100_subassembly.txt \
+python msa_pacbio.py -d ./output -o SUL1_test100_subassembly.txt \
 	--highQual input/SUL1_test100_combined_minQ0_assignment.tsv \
 	--inputSeqs input/SUL1_test100_seq_barcodes_filtered.txt \
 	-c 2 -t 0.6 \
