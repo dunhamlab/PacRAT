@@ -33,7 +33,7 @@ parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",
 parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
 parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
 parser.add_option("--cont", dest="cont", help="Continue working after disrupted run",default=False,action="store_true")
-
+parser.add_option("-s", "--s", dest="stats", help="Get stats for barcodes that need realignment",default=False,action="store_true")
 
 
 (options, args) = parser.parse_args()
@@ -60,6 +60,7 @@ print("Reading barcodes + reads file...")
 hq_dict = {}
 assignments = open(options.highQualFile, "r") # min_Q0_assignment.tsv
 for line in assignments:
+	line = line.upper()
 	paired_bcread = line.strip().split()
 	hq_dict[paired_bcread[0]] = paired_bcread[1]
 assignments.close()
@@ -71,6 +72,7 @@ print("Reading all PB reads...")
 read_dict = {}
 reads = open(options.inputSeqsFile, "r") # seq_barcodes.txt
 for line in reads: 
+	line = line.upper()
 	paired_bcread = line.strip().split()
 	#if paired_bcread[0] in ["AAAACCTTAT","AAAGACAAAA","AAAGATCCAG"]: debugging
 	#	print(paired_bcread[1])
@@ -120,6 +122,23 @@ if not os.path.exists(progress_file_name):
 else:
 	progress_file = open(progress_file_name, "a")
 	
+# for analyzing barcodes that don't meet threshold
+if not options.cont:
+	if os.path.exists("below_threshold_Ncount.txt"):
+		os.remove("below_threshold_Ncount.txt")
+		
+def threshold_analysis(_barcode,_consensus):
+	threshold_file_out_name = "below_threshold_Ncount.txt"
+	if not os.path.exists(threshold_file_out_name):
+		threshold_file_out = open(threshold_file_out_name,"w+")
+	else:
+		threshold_file_out = open(threshold_file_out_name, "a")
+	count_Ns = _consensus.count("N")
+	threshold_file_out.write(_barcode + "\t" + str(count_Ns) + "\n")
+	threshold_file_out.close()
+	return(count_Ns)
+	
+	
 # Giant for loop, now as a function
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
@@ -157,11 +176,14 @@ def loop_bcs(key):
 				consensus = summary_align.gap_consensus(threshold=options.thresh,  ambiguous='N')
 				consensus = str(consensus)
 				consensus = consensus.replace("-","") 
-				if options.verbose: print("got consensus 1 " + str(key))	
+				if options.verbose: print("got consensus 1 " + str(key))
 		
 			#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 			if 'N' in consensus:
 				#write 1st consensus and HQ read to new file
+				if options.stats:
+					countN = threshold_analysis(key,consensus)
+					if options.verbose: print(key + " barcode has " + str(countN) + " ambiguous sites.")
 				int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
 				fasta_2 = open(int_file_name_2,"w+")
 				fasta_2.write(">"+key+"\n"+consensus)
