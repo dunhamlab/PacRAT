@@ -33,7 +33,7 @@ parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",
 parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
 parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
 parser.add_option("--cont", dest="cont", help="Continue working after disrupted run",default=False,action="store_true")
-parser.add_option("-s", "--s", dest="stats", help="Get stats for barcodes that need realignment",default=False,action="store_true")
+parser.add_option("-s", "--stats", dest="stats", help="Get stats for barcodes that need realignment",default=False,action="store_true")
 
 
 (options, args) = parser.parse_args()
