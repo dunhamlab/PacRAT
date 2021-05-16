@@ -40,9 +40,6 @@ parser.add_option("-s", "--stats", dest="stats", help="Get stats for barcodes th
 
 os.chdir(options.workdir)
 
-#muscle_exe = "/net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/RHEL6/x86_64/bin/muscle"
-#muscle_exe = "../../muscle/muscle"
-#needle_exe = "../../emboss/EMBOSS-6.6.0/emboss/needle"
 muscle_exe = options.muscle
 needle_exe = options.needle
 
@@ -74,8 +71,6 @@ reads = open(options.inputSeqsFile, "r") # seq_barcodes.txt
 for line in reads: 
 	line = line.upper()
 	paired_bcread = line.strip().split()
-	#if paired_bcread[0] in ["AAAACCTTAT","AAAGACAAAA","AAAGATCCAG"]: debugging
-	#	print(paired_bcread[1])
 	if paired_bcread[0] in read_dict:
 		read_dict[paired_bcread[0]].append(paired_bcread[1])
 	else:
@@ -86,7 +81,7 @@ print(str(totalBarcodes) + " barcodes found in hq file")
 totalBarcodes2 = len(read_dict.keys())
 print(str(totalBarcodes2) + " barcodes found in other file") 
 
-# if needed to pick up where script broke 
+# **************** if needed to pick up where script broke (option --cont) **************** #
 # only run if --cont is included
 # deletes progress file if --cont is not included; removes barcodes from hq_dict if --cont is included
 # appends to barcode cutoff file if --cont is included; opens & wipes barcode cutoff file if not
@@ -121,12 +116,21 @@ if not os.path.exists(progress_file_name):
 	progress_file = open(progress_file_name,"w+")
 else:
 	progress_file = open(progress_file_name, "a")
+# ***************************************************************************************** #
 	
-# for analyzing barcodes that don't meet threshold
+# **************** for analyzing barcodes that don't meet threshold (option -s) *********** #
+threshold_analyzed_bcs = []
 if not options.cont:
 	if os.path.exists("below_threshold_Ncount.txt"):
 		os.remove("below_threshold_Ncount.txt")
-		
+else:
+	if os.path.exists("below_threshold_Ncount.txt"):
+		threshold_file_out = open("below_threshold_Ncount.txt","r")
+		for line in threshold_file_out:
+			line = line.strip().split("\t")
+			threshold_analyzed_bcs.append(line[0])
+			
+
 def threshold_analysis(_barcode,_consensus):
 	threshold_file_out_name = "below_threshold_Ncount.txt"
 	if not os.path.exists(threshold_file_out_name):
@@ -137,8 +141,9 @@ def threshold_analysis(_barcode,_consensus):
 	threshold_file_out.write(_barcode + "\t" + str(count_Ns) + "\n")
 	threshold_file_out.close()
 	return(count_Ns)
-	
-	
+# ***************************************************************************************** #
+
+# **************** Main alignment/Consensus function ************************************** #
 # Giant for loop, now as a function
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
@@ -180,10 +185,12 @@ def loop_bcs(key):
 		
 			#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 			if 'N' in consensus:
-				#write 1st consensus and HQ read to new file
+				# analyzes barcodes that don't meet threshold, if -s is included
 				if options.stats:
-					countN = threshold_analysis(key,consensus)
-					if options.verbose: print(key + " barcode has " + str(countN) + " ambiguous sites.")
+					if key not in threshold_analyzed_bcs:
+						countN = threshold_analysis(key,consensus)
+						if options.verbose: print(key + " barcode has " + str(countN) + " ambiguous sites.")
+				#write 1st consensus and HQ read to new file
 				int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
 				fasta_2 = open(int_file_name_2,"w+")
 				fasta_2.write(">"+key+"\n"+consensus)
@@ -225,8 +232,10 @@ def loop_bcs(key):
 	progress_file.write(key+"\n")
 	if options.verbose: print("Wrote " + key + " to progress file")
 	progress_file.flush()
-			
-# Parallelization stuff
+# ***************************************************************************************** #
+
+
+# **************** Parallelization and print ********************************************** #
 num_cores = multiprocessing.cpu_count()
 print("Number of cores: " + str(num_cores))
 results = Parallel(n_jobs=(num_cores),prefer="threads")(delayed(loop_bcs)(key) for key in hq_dict)
@@ -248,3 +257,4 @@ print("Ending time: "+endTime)
 recordTime = open("run_times.tsv","a+")
 recordTime.write(str(getpass.getuser())+"\t"+startTime+"\t"+endTime+"\t"+str(num_cores)+"\n")
 recordTime.close()
+# ***************************************************************************************** #
