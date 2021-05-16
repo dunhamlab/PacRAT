@@ -31,6 +31,7 @@ In your driver script, be sure to specify the location of each software.
 | **--cont** | If program is disrupted or aborts, this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
 
 Input files:
+
 This script only requires two input files. The input files for both `--highQual` and `--inputSeqs` file should be tab-delimited file, where the first column is the barcode and the second column is the associated read.
 
 Output files:
