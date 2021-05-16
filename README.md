@@ -24,7 +24,11 @@ In your driver script, be sure to specify the location of each software.
 | **--inputSeqs** | Raw barcode, variant, and quality of sequencies |
 | **-c**,**--cutoff** |	Minimum number of CCS reads needed in order to retain reads associated with specific barcodes (default = 2) |
 | **-t**,**--threshold** |	Minimum frequency threshold for calling consensus reads (default = 0.7) |
+| **-s**,**--stats**  | Option to generate alignment stats. Currently outputs below_threshold_Ncount.txt file which returns the barcodes with ambiguous sites and how many ambiguous sites were present total. |
 | **-v**,**--verbose** |	Debug output |
 | **-m**,**--muscle** | Location of compiled/extracted MUSCLE program |
 | **-n**,**--needle** | Location of compiled Needle program |
-| **--cont** | If program is disrupted or aborts, this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed|
+| **--cont** | If program is disrupted or aborts, this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
+
+Input files:
+
