@@ -37,22 +37,11 @@ parser.add_option("-s", "--stats", dest="stats", help="Get stats for barcodes th
 
 
 (options, args) = parser.parse_args()
-
-os.chdir(options.workdir)
-
 muscle_exe = options.muscle
 needle_exe = options.needle
 
-#create intermediates directories
-os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
-
-if options.cont:
-	outputfile = open(options.out,"a")
-else:
-	outputfile = open(options.out, "w+")
-
+# **************** Read input files ******************************************************* #
 print("Reading barcodes + reads file...")
-
 # read original assignments into dictionary
 hq_dict = {}
 assignments = open(options.highQualFile, "r") # min_Q0_assignment.tsv
@@ -80,6 +69,17 @@ totalBarcodes = len(hq_dict.keys())
 print(str(totalBarcodes) + " barcodes found in hq file")
 totalBarcodes2 = len(read_dict.keys())
 print(str(totalBarcodes2) + " barcodes found in other file") 
+# ***************************************************************************************** #
+
+os.chdir(options.workdir) # change working directory to output folder
+
+#create intermediates directories in output folder
+os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
+
+if options.cont:
+	outputfile = open(options.out,"a")
+else:
+	outputfile = open(options.out, "w+")
 
 # **************** if needed to pick up where script broke (option --cont) **************** #
 # only run if --cont is included
