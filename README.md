@@ -30,11 +30,11 @@ In your driver script, be sure to specify the location of each software.
 | **-n**,**--needle** | Location of compiled Needle program |
 | **--cont** | If program is disrupted or aborts, this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
 
-Input files:
+**Input files:**
 
 This script only requires two input files. The input files for both `--highQual` and `--inputSeqs` file should be tab-delimited file, where the first column is the barcode and the second column is the associated read.
 
-Output files:
+**Output files:**
   * The output file, dictated by the file name you specify for `--out`, is a tab-delimited file, where the first column is the barcode and the second column is the aligned associated read. 
   * The script will also produce a file called `progress_file.txt`. This file is generated when a barcode is finished being processed. If your script is killed in the middle of a run, you can include the `--cont` option the next time you run the driver script, and it will not reprocess barcodes that were already processed in the last run.
   * The `barcodes_below_cutoff.txt` file returns barcodes that were not processed because it did not meet the read cutoff specified by `-c`. You can double check that the script is working properly by adding together the number of barcodes in your output file (from `--out`) and the number of barcodes in the `barcodes_below_cutoff.txt` file.
