@@ -32,7 +32,7 @@ echo "Environment activated"
 
 # for running in cluster
 python msa_pacbio.py -d ./test \
-	-o SUL1_test100_seq_barcodes_aligned.txt \
+	-o SUL1_test100_subassembly.txt \
 	--highQual SUL1_test100_combined_minQ0_assignment.tsv \
 	--inputSeqs SUL1_test100_seq_barcodes_filtered.txt -c 2 -t 0.6 \
 	-m /net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/CentOS7/x86_64/bin/muscle \
