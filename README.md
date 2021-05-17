@@ -7,8 +7,8 @@ qsub ./driver_SUL1_test.sh
 
 #### Running locally
 
-Scripts are now edited to run locally. To run on the cluster, download an older version (before 10/2/2020).  
-To set up your environment, install [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) and ensure it is working on your computer. Load the environment `conda env create --file msaccs_env.yml`  
+Scripts can run locally, although we recommend using a cluster/job submission system to optimize memory usage. 
+To set up your environment, install [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) and ensure it is working on your computer. Once Anaconda is installed, you should be able to run the `driver_msa.sh` script. If you run the Python script on its own (without using the `driver_msa.sh` script, be sure to load the environment `conda env create --file msaccs_env.yml` beforehand to ensure all packages are installed and on the correct version.
 
 
 (Updated 5/15/2021)
@@ -17,7 +17,7 @@ The msa_pacbio.py script utilizes the multiple sequence aligner, [MUSCLE](https:
 To install MUSCLE, extract the zipped MUSCLE file `tar -zxvf muscle_filename_here.tar.gz`. The MUSCLE software is ready to run as soon as it is unzipped. For the EMBOSS file, unzip it `tar -zxvf emboss_filename_here.tar.gz`. Through terminal, go to the unzipped EMBOSS directory and type `./configure`. When that is finished, type `make` (this may take 5-10 minutes). The software needed through EMBOSS is called needle, which is located in `EMBOSS-versionX/emboss/needle`.  
 
 
-In your driver script, be sure to specify the location of each software.
+In your driver script, be sure to specify the location of each software using the `-m` and `-n` options.
   
 | Option | Description |
 |--------|-------------|
@@ -35,7 +35,7 @@ In your driver script, be sure to specify the location of each software.
 
 **Input files:**
 
-This script only requires two input files. The input files for both `--highQual` and `--inputSeqs` file should be tab-delimited file, where the first column is the barcode and the second column is the associated read. You can generate both these files following the pipeline described in the [AssemblyByPacBio repository](https://github.com/shendurelab/AssemblyByPacBio). The `--inputSeqs` file will be generated from the `extractBarcodeInsertPairs_moreQC.py` script, and the `--highQual` file will be generated from the `unifyAssignment.py` script.
+This script requires two input files. The input files for both `--highQual` and `--inputSeqs` file should be tab-delimited file, where the first column is the barcode and the second column is the associated read. You can generate both these files following the pipeline described in the [AssemblyByPacBio repository](https://github.com/shendurelab/AssemblyByPacBio). The `--inputSeqs` file will be generated from the `extractBarcodeInsertPairs_moreQC.py` script, and the `--highQual` file will be generated from the `unifyAssignment.py` script.
 
 **Output files:**
   * The output file, dictated by the file name you specify for `--out`, is a tab-delimited file, where the first column is the barcode and the second column is the aligned associated read. 
