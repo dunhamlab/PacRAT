@@ -35,7 +35,7 @@ In your driver script, be sure to specify the location of each software.
 
 **Input files:**
 
-This script only requires two input files. The input files for both `--highQual` and `--inputSeqs` file should be tab-delimited file, where the first column is the barcode and the second column is the associated read.
+This script only requires two input files. The input files for both `--highQual` and `--inputSeqs` file should be tab-delimited file, where the first column is the barcode and the second column is the associated read. You can generate both these files following the pipeline described in the [AssemblyByPacBio repository](https://github.com/shendurelab/AssemblyByPacBio). The `--inputSeqs` file will be generated from the `extractBarcodeInsertPairs_moreQC.py` script, and the `--highQual` file will be generated from the `unifyAssignment.py` script.
 
 **Output files:**
   * The output file, dictated by the file name you specify for `--out`, is a tab-delimited file, where the first column is the barcode and the second column is the aligned associated read. 
