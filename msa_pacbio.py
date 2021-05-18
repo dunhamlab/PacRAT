@@ -19,7 +19,7 @@ import getpass
 startTime = str(datetime.now())
 print("Starting time: "+startTime)
 
-# Option Parser
+# Option Parser: required arguments are two input files (raw barcode-sequence file, and high quality sequence file)
 parser = OptionParser()
 parser.add_option("-d","--directory", dest="workdir", help="Working directory",default=os.getcwd(),type="string")
 parser.add_option("-o","--out", dest="out", help="Output file",default="Seq_barcodes_aligned.txt",type="string")
@@ -28,20 +28,18 @@ parser.add_option("--inputSeqs", dest="inputSeqsFile", help="Raw barcode, sequen
 # Additional options
 parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs reads for analysis",default=2,type="int")
 parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to determine consensus sequence",default=0.7,type="float")
-#parser.add_option("-a","--aligner", dest="aligner", help="Choose an aligner: muscle (default) or clustal",default="muscle",type="string",choices=["muscle", "clustal"])
 parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
 parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
 parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
 parser.add_option("--cont", dest="cont", help="Continue working after disrupted run",default=False,action="store_true")
 parser.add_option("-s", "--stats", dest="stats", help="Get stats for barcodes that need realignment",default=False,action="store_true")
 
-
 (options, args) = parser.parse_args()
 muscle_exe = options.muscle
 needle_exe = options.needle
 
 # **************** Read input files ******************************************************* #
-print("Reading barcodes + reads file...")
+if options.verbose: print("Reading barcodes + reads file...")
 # read original assignments into dictionary
 hq_dict = {}
 assignments = open(options.highQualFile, "r") # min_Q0_assignment.tsv
@@ -50,11 +48,10 @@ for line in assignments:
 	paired_bcread = line.strip().split()
 	hq_dict[paired_bcread[0]] = paired_bcread[1]
 assignments.close()
-print("Done reading HQ barcodes.")
+if options.verbose: print("Done reading HQ barcodes.")
 
-# read all ccs reads into dict: BC: [seq1, seq2...]
-# seq quality pairs stored as tuples
-print("Reading all PB reads...")
+# Read all ccs reads into dict: BC: [seq1, seq2...]. Seq quality pairs stored as tuples
+if options.verbose: print("Reading all PB reads...")
 read_dict = {}
 reads = open(options.inputSeqsFile, "r") # seq_barcodes.txt
 for line in reads: 
@@ -66,9 +63,9 @@ for line in reads:
 		read_dict[paired_bcread[0]] = [paired_bcread[1]]
 reads.close()
 totalBarcodes = len(hq_dict.keys())
-print(str(totalBarcodes) + " barcodes found in hq file")
+if options.verbose: print(str(totalBarcodes) + " barcodes found in hq file")
 totalBarcodes2 = len(read_dict.keys())
-print(str(totalBarcodes2) + " barcodes found in other file") 
+if options.verbose: print(str(totalBarcodes2) + " barcodes found in other file") 
 # ***************************************************************************************** #
 
 os.chdir(options.workdir) # change working directory to output folder
@@ -144,7 +141,8 @@ def threshold_analysis(_barcode,_consensus):
 # ***************************************************************************************** #
 
 # **************** Main alignment/Consensus function ************************************** #
-# Giant for loop, now as a function
+# Align all seuqences with the same barcode. If consensus found, use that sequence. 
+# If not, realign to high quality sequence
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
 	#create fasta file for each barcode: 
