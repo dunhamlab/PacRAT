@@ -33,6 +33,7 @@ parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program"
 parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
 parser.add_option("--cont", dest="cont", help="Continue working after disrupted run",default=False,action="store_true")
 parser.add_option("-s", "--stats", dest="stats", help="Get stats for barcodes that need realignment",default=False,action="store_true")
+parser.add_option("-r","--rmint", dest="rm_intermediates",help="Removes intermediate files when finished",default=False,action="store_true")
 
 (options, args) = parser.parse_args()
 muscle_exe = options.muscle
@@ -165,7 +166,7 @@ def loop_bcs(key):
 			
 		else: 
 			#align files together - first alignment
-			aln_file_name = "intermediates/alignments/" + key + ".aln" # should this be os.path.join?
+			aln_file_name = "intermediates/alignments/" + key + ".aln"
 			#muscle system call here, write to output file
 			muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
 			stdout, stderr = muscle_cline(int_file_name)
@@ -227,6 +228,19 @@ def loop_bcs(key):
 		outputfile.flush()
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
 		cutoff_bcs_file.write(key+"\n")
+	# delete fasta files
+	if os.path.exists("intermediates/fasta/" + key + ".fasta"):
+		os.remove("intermediates/fasta/" + key + ".fasta")
+	if os.path.exists("intermediates/fasta_2/" + key + ".fasta"):
+		os.remove("intermediates/fasta_2/" + key + ".fasta")
+	if os.path.exists("intermediates/fasta_2/" + key + "_hq.fasta"):
+		os.remove("intermediates/fasta_2/" + key + "_hq.fasta")
+	# if --rmint, remove intermediate alignment files
+	if options.rm_intermediates: 
+		if os.path.exists("intermediates/alignments/" + key + ".aln"):
+			os.remove("intermediates/alignments/" + key + ".aln")
+		if os.path.exists("intermediates/realignments/"+key+".aln"):
+			os.remove("intermediates/realignments/"+key+".aln")
 	progress_file.write(key+"\n")
 	if options.verbose: print("Wrote " + key + " to progress file")
 	progress_file.flush()
@@ -238,6 +252,12 @@ num_cores = multiprocessing.cpu_count()
 print("Number of cores: " + str(num_cores))
 results = Parallel(n_jobs=(num_cores),prefer="threads")(delayed(loop_bcs)(key) for key in hq_dict)
 
+# removes intermediates folder if --rmint is flagged
+if options.rm_intermediates:
+	os.system("rm -r intermediates")
+else:
+	os.system("rm -r intermediates/fasta*")
+	
 # print all consensus sequences to outfile
 #totalCons = len(consensus_dict.keys())
 #print("Sequences found for " + str(totalCons) + " barcodes")
