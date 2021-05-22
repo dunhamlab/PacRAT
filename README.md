@@ -31,6 +31,7 @@ In your driver script, be sure to specify the location of each software using th
 | **-m**,**--muscle** | Location of compiled/extracted MUSCLE program |
 | **-n**,**--needle** | Location of compiled Needle program |
 | **--cont** | If program is disrupted or aborts, this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
+| **-r**,**--rmint** | Removes intermediate alignment files |
 
 **Input files:**
 
