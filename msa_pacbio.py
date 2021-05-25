@@ -39,6 +39,8 @@ parser.add_option("-r","--rmint", dest="rm_intermediates",help="Removes intermed
 muscle_exe = options.muscle
 needle_exe = options.needle
 
+os.chdir(options.workdir) # change working directory to output folder
+
 # **************** Read input files ******************************************************* #
 if options.verbose: print("Reading barcodes + reads file...")
 # read original assignments into dictionary
@@ -68,8 +70,6 @@ if options.verbose: print(str(totalBarcodes) + " barcodes found in hq file")
 totalBarcodes2 = len(read_dict.keys())
 if options.verbose: print(str(totalBarcodes2) + " barcodes found in other file") 
 # ***************************************************************************************** #
-
-os.chdir(options.workdir) # change working directory to output folder
 
 #create intermediates directories in output folder
 os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
