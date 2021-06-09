@@ -142,7 +142,6 @@ def threshold_analysis(_barcode,_consensus):
 # **************** Main alignment/Consensus function ************************************** #
 # Align all seuqences with the same barcode. If consensus found, use that sequence. 
 # If not, realign to high quality sequence
-print("Generating fasta files for alignments")
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
 	#create fasta file for each barcode: 
@@ -158,7 +157,6 @@ def loop_bcs(key):
 	if options.verbose: print("made fasta file " + str(key))
 
 	# only align if there are at least CUTOFF ccs reads
-        print("Starting alignments")
 	if len(bc_entry) >= options.cutoff:
 		if len(bc_entry) == 1: #special case, don't need to align here
 			outputfile.write(key+"\t"+bc_entry[0]+"\n")
@@ -245,12 +243,12 @@ def loop_bcs(key):
 	if options.verbose: print("Wrote " + key + " to progress file")
 	progress_file.flush()
 # ***************************************************************************************** #
-print("All alignments completed, generating output files")
 
 # **************** Parallelization and print ********************************************** #
 num_cores = multiprocessing.cpu_count()
-print("Number of cores: " + str(num_cores))
+print("Starting alignments with",str(num_cores), "cores")
 results = Parallel(n_jobs=(num_cores),prefer="threads")(delayed(loop_bcs)(key) for key in hq_dict)
+print("All alignments completed, generating output files")
 
 # removes intermediates folder if --rmint is flagged
 if options.rm_intermediates:
