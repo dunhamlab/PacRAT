@@ -42,7 +42,7 @@ needle_exe = options.needle
 os.chdir(options.workdir) # change working directory to output folder
 
 # **************** Read input files ******************************************************* #
-if options.verbose: print("Reading barcodes + reads file...")
+print("Program started, reading input files")
 # read original assignments into dictionary
 hq_dict = {}
 assignments = open(options.highQualFile, "r") # min_Q0_assignment.tsv
@@ -51,10 +51,10 @@ for line in assignments:
 	paired_bcread = line.strip().split()
 	hq_dict[paired_bcread[0]] = paired_bcread[1]
 assignments.close()
-if options.verbose: print("Done reading HQ barcodes.")
+totalBarcodes = len(hq_dict.keys())
+if options.verbose: print(str(totalBarcodes) + " barcodes found in hq file")
 
 # Read all ccs reads into dict: BC: [seq1, seq2...]. Seq quality pairs stored as tuples
-if options.verbose: print("Reading all PB reads...")
 read_dict = {}
 reads = open(options.inputSeqsFile, "r") # seq_barcodes.txt
 for line in reads: 
@@ -65,8 +65,6 @@ for line in reads:
 	else:
 		read_dict[paired_bcread[0]] = [paired_bcread[1]]
 reads.close()
-totalBarcodes = len(hq_dict.keys())
-if options.verbose: print(str(totalBarcodes) + " barcodes found in hq file")
 totalBarcodes2 = len(read_dict.keys())
 if options.verbose: print(str(totalBarcodes2) + " barcodes found in other file") 
 # ***************************************************************************************** #
@@ -144,6 +142,7 @@ def threshold_analysis(_barcode,_consensus):
 # **************** Main alignment/Consensus function ************************************** #
 # Align all seuqences with the same barcode. If consensus found, use that sequence. 
 # If not, realign to high quality sequence
+print("Generating fasta files for alignments")
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
 	#create fasta file for each barcode: 
@@ -159,6 +158,7 @@ def loop_bcs(key):
 	if options.verbose: print("made fasta file " + str(key))
 
 	# only align if there are at least CUTOFF ccs reads
+        print("Starting alignments")
 	if len(bc_entry) >= options.cutoff:
 		if len(bc_entry) == 1: #special case, don't need to align here
 			outputfile.write(key+"\t"+bc_entry[0]+"\n")
@@ -245,7 +245,7 @@ def loop_bcs(key):
 	if options.verbose: print("Wrote " + key + " to progress file")
 	progress_file.flush()
 # ***************************************************************************************** #
-
+print("All alignments completed, generating output files")
 
 # **************** Parallelization and print ********************************************** #
 num_cores = multiprocessing.cpu_count()
@@ -258,14 +258,9 @@ if options.rm_intermediates:
 else:
 	os.system("rm -r intermediates/fasta*")
 	
-# print all consensus sequences to outfile
-#totalCons = len(consensus_dict.keys())
-#print("Sequences found for " + str(totalCons) + " barcodes")
-#for bc, value in consensus_dict.items():
-#	outputfile.write(bc+"\t"+value+"\n")
-# close output file  
+# close output files
 outputfile.close()
-progress_file.close()
+progress_file.close() #TODO, delete this??
 cutoff_bcs_file.close()
 
 endTime = str(datetime.now())
