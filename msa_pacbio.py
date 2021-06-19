@@ -5,8 +5,7 @@ from Bio import SeqIO
 import glob
 import sys
 from Bio.Align.Applications import MuscleCommandline
-#from StringIO import StringIO # for Python 2
-from io import StringIO # for Python 3
+from io import StringIO
 from Bio import AlignIO
 from Bio.Align import AlignInfo
 from optparse import OptionParser
@@ -15,7 +14,7 @@ from joblib import Parallel, delayed
 import multiprocessing
 import getpass
 
-
+# Print timing info
 startTime = str(datetime.now())
 print("Starting time: "+startTime)
 
@@ -69,21 +68,14 @@ totalBarcodes2 = len(read_dict.keys())
 if options.verbose: print(str(totalBarcodes2) + " barcodes found in other file") 
 # ***************************************************************************************** #
 
-#create intermediates directories in output folder
+# create intermediates directories in output folder
 os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
 
+# ************* if needed to pick up where script left off (option --cont) **************** #
+# deletes progress file if --cont is not included; removes barcodes from hq_dict if --cont is included
+progress_file_name = "progress_file.txt" # create progress file that writes barcode each time loop_bcs function is run
 if options.cont:
 	outputfile = open(options.out,"a")
-else:
-	outputfile = open(options.out, "w+")
-
-# **************** if needed to pick up where script broke (option --cont) **************** #
-# only run if --cont is included
-# deletes progress file if --cont is not included; removes barcodes from hq_dict if --cont is included
-# appends to barcode cutoff file if --cont is included; opens & wipes barcode cutoff file if not
-progress_file_name = "progress_file.txt" # create progress file that writes barcode each time loop_bcs function is run
-under_cutoff_bcs_name = "barcodes_below_cutoff.txt" # barcodes that miss the cutoff
-if options.cont:
 	if os.path.exists(progress_file_name):
 		prog_file = open(progress_file_name,"r")
 		remove_keys = [] # list of keys to remove from dict because it's already been processed
@@ -91,52 +83,31 @@ if options.cont:
 			line = line.strip()
 			if line != "":
 				remove_keys.append(line)
-	# remove barcodes in hq_dict if it's already been processed through loop_bcs function
+		# remove barcodes in hq_dict if it's already been processed through loop_bcs function
 		for bc in remove_keys:
 			if bc in hq_dict:
 				hq_dict.pop(bc, None)
-		totalBarcodes3 = len(hq_dict.keys())
-		new_totalBarcodes = totalBarcodes - totalBarcodes3
-		if options.verbose: print(str(new_totalBarcodes) + " barcodes removed from hq file -- already processed.")
-	if os.path.exists(under_cutoff_bcs_name):
-		cutoff_bcs_file = open(under_cutoff_bcs_name, "a")
-else: # if --continue is not included, delete the progress file from the last run.
-	if os.path.exists(progress_file_name):
-		os.remove(progress_file_name)
-		if options.verbose: print("Deleted old progress file")
-	cutoff_bcs_file = open(under_cutoff_bcs_name,"w+")
-	if options.verbose: print("Created files to track barcodes that don't meet threshold")
+		print("Continue option enabled, " + str(len(remove_keys)) + " barcodes already processed, continuing.")
+	else: # If no progress file exists, print error and exit
+		sys.exit("Continue option specified but no progress file found, exiting")
 
-# creates or appends to progress file
-if not os.path.exists(progress_file_name):
-	progress_file = open(progress_file_name,"w+")
-else:
-	progress_file = open(progress_file_name, "a")
+else: # if --continue is not included, create/rewrite the progress file from the last run.
+	outputfile = open(options.out, "w+")
+	progress_file = open(progress_file_name, "w+")
+	
 # ***************************************************************************************** #
 	
-# **************** for analyzing barcodes that don't meet threshold (option -s) *********** #
-threshold_analyzed_bcs = []
-if not options.cont:
-	if os.path.exists("below_threshold_Ncount.txt"):
-		os.remove("below_threshold_Ncount.txt")
-else:
-	if os.path.exists("below_threshold_Ncount.txt"):
-		threshold_file_out = open("below_threshold_Ncount.txt","r")
-		for line in threshold_file_out:
-			line = line.strip().split("\t")
-			threshold_analyzed_bcs.append(line[0])
-			
-
-def threshold_analysis(_barcode,_consensus):
-	threshold_file_out_name = "below_threshold_Ncount.txt"
-	if not os.path.exists(threshold_file_out_name):
-		threshold_file_out = open(threshold_file_out_name,"w+")
+# ************** Stats option: open/append relevant files (option -s, --stats) ************ #
+cutoff_filename = "barcodes_below_cutoff.txt" # barcodes that miss the cutoff
+threshold_filename = "below_threshold_Ncount.txt" # barcodes that have an ambigious site in sequence
+if options.stats:
+	if options.verbose: print("Creating stats files")
+	if options.cont:
+		cutoff_file = open(cutoff_filename, "a")
+		threshold_file = open(threshold_filename, "a")
 	else:
-		threshold_file_out = open(threshold_file_out_name, "a")
-	count_Ns = _consensus.count("N")
-	threshold_file_out.write(_barcode + "\t" + str(count_Ns) + "\n")
-	threshold_file_out.close()
-	return(count_Ns)
+		cutoff_file = open(cutoff_filename, "w+")
+		threshold_file = open(threshold_filename, "w+")
 # ***************************************************************************************** #
 
 # **************** Main alignment/Consensus function ************************************** #
@@ -160,7 +131,6 @@ def loop_bcs(key):
 	if len(bc_entry) >= options.cutoff:
 		if len(bc_entry) == 1: #special case, don't need to align here
 			outputfile.write(key+"\t"+bc_entry[0]+"\n")
-			#consensus_dict[key] = bc_entry[0]
 			
 		else: 
 			#align files together - first alignment
@@ -182,11 +152,13 @@ def loop_bcs(key):
 		
 			#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 			if 'N' in consensus:
-				# analyzes barcodes that don't meet threshold, if -s is included
+				# List barcodes that have ambigious sites, if --stats is included
 				if options.stats:
-					if key not in threshold_analyzed_bcs:
-						countN = threshold_analysis(key,consensus)
-						if options.verbose: print(key + " barcode has " + str(countN) + " ambiguous sites.")
+					Ncount = consensus.count("N")
+					threshold_file.write(key + "\t" + str(Ncount) + "\n")
+					threshold_file.flush()
+					if options.verbose: print(key + " barcode has " + str(Ncount) + " ambiguous sites.")
+				
 				#write 1st consensus and HQ read to new file
 				int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
 				fasta_2 = open(int_file_name_2,"w+")
@@ -214,18 +186,18 @@ def loop_bcs(key):
 				consensus = finalSeq
 				consensus = consensus.replace("-","")		
 				outputfile.write(key+"\t"+consensus+"\n")
-				#consensus_dict[key] = consensus
 				if options.verbose: print("realigned and got new consensus " + str(key))
 	
 			#if no Ns: write consensus to output file
 			else:
 				outputfile.write(key+"\t"+consensus+"\n")
-				#consensus_dict[key] = consensus
 		
 			if options.verbose: print("got consensus " + str(key))
 		outputfile.flush()
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
-		cutoff_bcs_file.write(key+"\n")
+		if options.stats:
+			cutoff_file.write(key+"\n")
+			cutoff_file.flush()
 	# delete fasta files
 	if os.path.exists("intermediates/fasta/" + key + ".fasta"):
 		os.remove("intermediates/fasta/" + key + ".fasta")
@@ -258,14 +230,11 @@ else:
 	
 # close output files
 outputfile.close()
-progress_file.close() #TODO, delete this??
-cutoff_bcs_file.close()
+progress_file.close()
+if options.stats:
+	cutoff_file.close()
+	threshold_file.close()
 
 endTime = str(datetime.now())
 print("Ending time: "+endTime)
-
-#remove later?
-recordTime = open("run_times.tsv","a+")
-recordTime.write(str(getpass.getuser())+"\t"+startTime+"\t"+endTime+"\t"+str(num_cores)+"\n")
-recordTime.close()
 # ***************************************************************************************** #
