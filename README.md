@@ -42,6 +42,4 @@ This script requires two input files. The input files for both `--highQual` and 
   * The script will also produce a file called `progress_file.txt`. This file is generated when a barcode is finished being processed. If your script is killed in the middle of a run, you can include the `--cont` option the next time you run the driver script, and it will not reprocess barcodes that were already processed in the last run.
   * The `barcodes_below_cutoff.txt` file returns barcodes that were not processed because it did not meet the read cutoff specified by `-c`. You can double check that the script is working properly by adding together the number of barcodes in your output file (from `--out`) and the number of barcodes in the `barcodes_below_cutoff.txt` file.
   * The `below_threshold_Ncount.txt` file returns the number of barcodes that contained ambiguous sites if the `--stats` option is included. Sites are determined to be ambiguous if nucleotides in the same position do not pass the majority threshold specified by the `--threshold` parameter. If the `--stats` option is not included, the `below_threshold_Ncount.txt` file will be deleted.
-  * `run_times.tsv` returns the start time, end time, and number of cores for a particular job. This is appended to the file.
  
-
