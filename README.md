@@ -1,6 +1,6 @@
-# Subassembly_PB_IndelCorrection
+# PacBio Read AlingnmenT (Pac-RAT)
 
-Correcting indels to PacBio reads for subassembly
+Improving PacBio barcode-variant mapping (subassembly) using multiple sequence alignment.
 
 #### Running instructions on GS Cluster
 qsub ./driver_SUL1_test.sh
