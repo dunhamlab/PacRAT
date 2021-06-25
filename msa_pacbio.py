@@ -22,14 +22,14 @@ print("Starting time: "+startTime)
 parser = OptionParser()
 parser.add_option("-d","--directory", dest="workdir", help="Working directory",default=os.getcwd(),type="string")
 parser.add_option("-o","--out", dest="out", help="Output file",default="Seq_barcodes_aligned.txt",type="string")
-parser.add_option("--highQual", dest="highQualFile", help="File of barcode-seq association, seq from highest quality read",type="string")
+#parser.add_option("--highQual", dest="highQualFile", help="File of barcode-seq association, seq from highest quality read",type="string")
 parser.add_option("--inputSeqs", dest="inputSeqsFile", help="Raw barcode, sequence, quality input sequences",type="string")
 # Additional options
 parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs reads for analysis",default=2,type="int")
 parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to determine consensus sequence",default=0.7,type="float")
 parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
 parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
-parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
+#parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
 parser.add_option("--cont", dest="cont", help="Continue working after disrupted run",default=False,action="store_true")
 parser.add_option("-s", "--stats", dest="stats", help="Get stats for barcodes that need realignment",default=False,action="store_true")
 parser.add_option("-r","--rmint", dest="rm_intermediates",help="Removes intermediate files when finished",default=False,action="store_true")
@@ -42,16 +42,17 @@ os.chdir(options.workdir) # change working directory to output folder
 
 # **************** Read input files ******************************************************* #
 print("Program started, reading input files")
+print("Input read file: ",str(options.inputSeqsFile))
 # read original assignments into dictionary
-hq_dict = {}
-assignments = open(options.highQualFile, "r") # min_Q0_assignment.tsv
-for line in assignments:
-	line = line.upper()
-	paired_bcread = line.strip().split()
-	hq_dict[paired_bcread[0]] = paired_bcread[1]
-assignments.close()
-totalBarcodes = len(hq_dict.keys())
-if options.verbose: print(str(totalBarcodes) + " barcodes found in hq file")
+#hq_dict = {}
+#assignments = open(options.highQualFile, "r") # min_Q0_assignment.tsv
+#for line in assignments:
+#	line = line.upper()
+#	paired_bcread = line.strip().split()
+#	hq_dict[paired_bcread[0]] = paired_bcread[1]
+#assignments.close()
+#totalBarcodes = len(hq_dict.keys())
+#if options.verbose: print(str(totalBarcodes) + " barcodes found in hq file")
 
 # Read all ccs reads into dict: BC: [seq1, seq2...]. Seq quality pairs stored as tuples
 read_dict = {}
@@ -60,16 +61,17 @@ for line in reads:
 	line = line.upper()
 	paired_bcread = line.strip().split()
 	if paired_bcread[0] in read_dict:
-		read_dict[paired_bcread[0]].append(paired_bcread[1])
+		read_dict[paired_bcread[0]].append((paired_bcread[1],paired_bcread[2]))
 	else:
-		read_dict[paired_bcread[0]] = [paired_bcread[1]]
+		read_dict[paired_bcread[0]] = (paired_bcread[1],paired_bcread[2])
 reads.close()
 totalBarcodes2 = len(read_dict.keys())
-if options.verbose: print(str(totalBarcodes2) + " barcodes found in other file") 
+if options.verbose: print(str(totalBarcodes2) + " unique barcodes found in input file") 
 # ***************************************************************************************** #
 
 # create intermediates directories in output folder
-os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
+#os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments & mkdir -p intermediates/fasta_2 & mkdir -p intermediates/realignments") 
+os.system("mkdir -p intermediates & mkdir -p intermediates/fasta & mkdir -p intermediates/alignments") 
 
 # ************* if needed to pick up where script left off (option --cont) **************** #
 # deletes progress file if --cont is not included; removes barcodes from hq_dict if --cont is included
@@ -114,24 +116,34 @@ if options.stats:
 # Align all seuqences with the same barcode. If consensus found, use that sequence. 
 # If not, realign to high quality sequence
 def loop_bcs(key):
-	bc_entry = read_dict[key] #list of sequences
+	bc_entry = read_dict[key] #list of sequences and quality score
+	highestQual = 0
+	highQualIndex = None 
 	#create fasta file for each barcode: 
-	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
-	if not os.path.isfile(int_file_name): 
-		intermediate_file = open(int_file_name, "w+")
-		i = 0       
-		for item in bc_entry: #add each read for a particular barcode in fasta format
-			intermediate_file.write(">" + key + "_" + str(i) + "\n")
-			intermediate_file.write(item+"\n")
-			i = i+1
-		intermediate_file.close()
-	if options.verbose: print("made fasta file " + str(key))
+	fasta_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
+	fastq_file = open(fasta_file_name, "w+")
+	i = 0       
+	for pair in bc_entry: #stored as list of tuples (seq, qual)
+		fastq_file.write(">" + key + "_" + str(i) + "\n")
+		fastq_file.write(pair[0]+"\n")
+		
+		# calculate mean quality score, store highest quality score for each BC
+		temp = map(lambda x:ord(x)-33,pair[1])
+		mQual = sum(temp)/float(len(temp))
+		if mQual > highestQual:
+			highest = mQual
+			highQualIndex = i
+		i += 1
+
+	fastq_file.close()
+	if options.verbose: print("Made fasta file for BC: " + str(key))
 
 	# only align if there are at least CUTOFF ccs reads
 	if len(bc_entry) >= options.cutoff:
-		if len(bc_entry) == 1: #special case, don't need to align here
-			outputfile.write(key+"\t"+bc_entry[0]+"\n")
-			
+		#special case, don't need to align here
+		if len(bc_entry) == 1: 
+			outputfile.write(key+"\t"+bc_entry[0][0]+"\n")
+
 		else: 
 			#align files together - first alignment
 			aln_file_name = "intermediates/alignments/" + key + ".aln"
@@ -140,77 +152,53 @@ def loop_bcs(key):
 			stdout, stderr = muscle_cline(int_file_name)
 			if options.verbose: print("passed cutoff, made first alignment " + str(key))
 
-			#get consensus: 
-			consensus = ""
-			if os.path.exists(aln_file_name): #probably should have an else here that throws an error, but it would be better to check that the muscle stderr is empty
+			# Get consensus from muscle alignment: 
+			if os.path.exists(aln_file_name):
 				alignment = AlignIO.read(aln_file_name, 'fasta')
 				summary_align = AlignInfo.SummaryInfo(alignment)
 				consensus = summary_align.gap_consensus(threshold=options.thresh,  ambiguous='N')
 				consensus = str(consensus)
-				consensus = consensus.replace("-","") 
-				if options.verbose: print("got consensus 1 " + str(key))
-		
-			#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
-			if 'N' in consensus:
-				# List barcodes that have ambigious sites, if --stats is included
-				if options.stats:
-					Ncount = consensus.count("N")
-					threshold_file.write(key + "\t" + str(Ncount) + "\n")
-					threshold_file.flush()
-					if options.verbose: print(key + " barcode has " + str(Ncount) + " ambiguous sites.")
 				
-				#write 1st consensus and HQ read to new file
-				int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
-				fasta_2 = open(int_file_name_2,"w+")
-				fasta_2.write(">"+key+"\n"+consensus)
-				fasta_2.close()
-				fasta_hq_name = os.path.join("intermediates/fasta_2/" + key + "_hq.fasta")
-				fasta_hq = open(fasta_hq_name,"w+")
-				fasta_hq.write(">"+key+"_hq\n"+hq_dict[key])
-				fasta_hq.close()
-				aln_file_name_2 = "intermediates/realignments/"+key+".aln"
-				cmd = needle_exe + " " + int_file_name_2 + " " + fasta_hq_name + " -auto -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
-				os.system(cmd)
+				# If there's a N in consensus, use seq from highest quality read
+				if 'N' in consensus:
+					# List barcodes that have ambigious sites, if --stats is included
+					if options.stats:
+						Ncount = consensus.count("N")
+						threshold_file.write(key + "\t" + str(Ncount) + "\n")
+						threshold_file.flush()
+						if options.verbose: print(key + " barcode has " + str(Ncount) + " ambiguous sites.")
+					
+					# get highest quality sequence from alignment. Alignment not in order of sequences
+					highQualSeq = ""
+					for record in alignment:
+						if record.id.split("_")[1] == highQualIndex
+						highQualSeq = record.seq
+					
+					# loop through alignment, resolve N's
+					for base in range(len(consensus)):
+						if consensus[base] == 'N':
+							consensus[base] = highQualSeq[base]
+					if 'N' in consensus: sys.exit("Could not resolve N(s) in consensus")
 
-				#consensus of new alignment file (mostly same from previous script)
-				alignment_2 = list(SeqIO.parse(aln_file_name_2,"fasta"))
-				consensus_seq = str(alignment_2[0].seq)
-				hq_seq = str(alignment_2[1].seq)
-				finalSeq = ""
-				lengthOfAlignment = len(consensus_seq)
-				for i in range(lengthOfAlignment):
-					if consensus_seq[i] == "N":
-						finalSeq = finalSeq+hq_seq[i]
-					else:
-						finalSeq = finalSeq + consensus_seq[i]
-				consensus = finalSeq
-				consensus = consensus.replace("-","")		
+				# remove dashes in consensus
+				consensus = consensus.replace("-","") 
+				if options.verbose: print("Got consensus for:  " + str(key))				
 				outputfile.write(key+"\t"+consensus+"\n")
-				if options.verbose: print("realigned and got new consensus " + str(key))
+			else: sys.exit("Could not find alignment file for: ", str(key))
 	
-			#if no Ns: write consensus to output file
-			else:
-				outputfile.write(key+"\t"+consensus+"\n")
-		
-			if options.verbose: print("got consensus " + str(key))
-		outputfile.flush()
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
 		if options.stats:
 			cutoff_file.write(key+"\n")
 			cutoff_file.flush()
+	
+	outputfile.flush()
 	# delete fasta files
 	if os.path.exists("intermediates/fasta/" + key + ".fasta"):
 		os.remove("intermediates/fasta/" + key + ".fasta")
-	if os.path.exists("intermediates/fasta_2/" + key + ".fasta"):
-		os.remove("intermediates/fasta_2/" + key + ".fasta")
-	if os.path.exists("intermediates/fasta_2/" + key + "_hq.fasta"):
-		os.remove("intermediates/fasta_2/" + key + "_hq.fasta")
-	# if --rmint, remove intermediate alignment files
 	if options.rm_intermediates: 
 		if os.path.exists("intermediates/alignments/" + key + ".aln"):
 			os.remove("intermediates/alignments/" + key + ".aln")
-		if os.path.exists("intermediates/realignments/"+key+".aln"):
-			os.remove("intermediates/realignments/"+key+".aln")
+	# write BC to progress file
 	progress_file.write(key+"\n")
 	if options.verbose: print("Wrote " + key + " to progress file")
 	progress_file.flush()
