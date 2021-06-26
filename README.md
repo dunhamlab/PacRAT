@@ -27,10 +27,10 @@ In your driver script, be sure to specify the location of each software using th
 | **-c**,**--cutoff** |	Minimum number of CCS reads needed in order to retain reads associated with specific barcodes (default = 2) |
 | **-t**,**--threshold** |	Minimum frequency threshold for calling consensus reads (default = 0.7) |
 | **-s**,**--stats**  | Option to generate alignment stats. Currently outputs below_threshold_Ncount.txt and barcodes_below_cutoff.txt files, see below for details |
-| **-v**,**--verbose** |	Debug output |
+| **-v**,**--verbose** |	Print verbose debug output |
 | **-m**,**--muscle** | Location of compiled/extracted MUSCLE program |
 | **-n**,**--needle** | Location of compiled Needle program |
-| **--cont** | If program is disrupted or aborts, this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
+| **--cont** | If program is disrupted or aborts, enabling this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
 | **-r**,**--rmint** | Removes intermediate alignment files |
 
 **Input files:**
