@@ -22,21 +22,18 @@ print("Starting time: "+startTime)
 parser = OptionParser()
 parser.add_option("-d","--directory", dest="workdir", help="Working directory",default=os.getcwd(),type="string")
 parser.add_option("-o","--out", dest="out", help="Output file",default="Seq_barcodes_aligned.txt",type="string")
-#parser.add_option("--highQual", dest="highQualFile", help="File of barcode-seq association, seq from highest quality read",type="string")
 parser.add_option("--inputSeqs", dest="inputSeqsFile", help="Raw barcode, sequence, quality input sequences",type="string")
 # Additional options
 parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs reads for analysis",default=2,type="int")
 parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to determine consensus sequence",default=0.7,type="float")
 parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
 parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
-#parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
 parser.add_option("--cont", dest="cont", help="Continue working after disrupted run",default=False,action="store_true")
 parser.add_option("-s", "--stats", dest="stats", help="Get stats for barcodes that need realignment",default=False,action="store_true")
 parser.add_option("-r","--rmint", dest="rm_intermediates",help="Removes intermediate files when finished",default=False,action="store_true")
 
 (options, args) = parser.parse_args()
 muscle_exe = options.muscle
-#needle_exe = options.needle
 
 os.chdir(options.workdir) # change working directory to output folder
 
@@ -54,8 +51,8 @@ for line in reads:
     else:
         read_dict[paired_bcread[0]] = [(paired_bcread[1],paired_bcread[2])]
 reads.close()
-totalBarcodes2 = len(read_dict.keys())
-if options.verbose: print(str(totalBarcodes2) + " unique barcodes found in input file") 
+totalBarcodes = len(read_dict.keys())
+if options.verbose: print(str(totalBarcodes) + " unique barcodes found in input file") 
 # ***************************************************************************************** #
 
 # create intermediates directories in output folder
@@ -104,8 +101,6 @@ if options.stats:
 # Align all seuqences with the same barcode. If consensus found, use that sequence. 
 def loop_bcs(key):
     bc_entry = read_dict[key] #list of sequences and quality score
-    highestQual = 0
-    highQualIndex = None 
     #create fasta file for each barcode: 
     fasta_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
     fastq_file = open(fasta_file_name, "w+")
@@ -113,13 +108,6 @@ def loop_bcs(key):
     for pair in bc_entry: #stored as list of tuples (seq, qual)
         fastq_file.write(">" + key + "_" + str(i) + "\n")
         fastq_file.write(pair[0]+"\n")
-        
-        # calculate mean quality score, store highest quality score for each BC
-        temp = [*map(lambda x:ord(x)-33,pair[1])]
-        mQual = sum(temp)/float(len(temp))
-        if mQual > highestQual:
-            highest = mQual
-            highQualIndex = i
         i += 1
 
     fastq_file.close()
@@ -155,12 +143,24 @@ def loop_bcs(key):
                         threshold_file.flush()
                         if options.verbose: print(key + " barcode has " + str(Ncount) + " ambiguous sites.")
                     
+                    highestQual = 0
+                    highQualIndex = None
+                    j = 0
+                    for pair in bc_entry: 
+                        # calculate mean quality score, store highest quality score for each BC
+                        temp = [*map(lambda x:ord(x)-33,pair[1])]
+                        mQual = sum(temp)/float(len(temp))
+                        if mQual > highestQual:
+                            highestQual = mQual
+                            highQualIndex = j
+                        j += 1
+                    
                     # get highest quality sequence from alignment. Alignment not in order of sequences
                     highQualSeq = ""
                     for record in alignment:
                         if int(record.id.split("_")[1]) == highQualIndex:
                             highQualSeq = record.seq
-                    if highQualSeq == "": sys.exit("Could not find high Qual sequence")
+                    if highQualSeq == "": sys.exit("Could not find high qual sequence for BC: ", str(key))
                     
                     # loop through alignment, resolve N's
                     new_consensus = consensus
@@ -174,7 +174,6 @@ def loop_bcs(key):
                 consensus = consensus.replace("-","") 
                 if options.verbose: print("Got consensus for:  " + str(key))                
                 outputfile.write(key+"\t"+consensus+"\n")
-                print(len(consensus))
             else: sys.exit("Could not find alignment file for: ", str(key))
     
     else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
