@@ -58,6 +58,7 @@ def compare_maps(dict1, dict2):
     match = 0
     diff = 0
     indel = 0
+    shorter1 = 0
     for barcode in dict1:
         if barcode in dict2: ## barcodes are in both files
             barcode1 = dict1[barcode]
@@ -65,13 +66,18 @@ def compare_maps(dict1, dict2):
             if barcode1 == barcode2: # compare
                 match +=1
             else:
+                print("Different barcode: ", barcode)
                 diff += 1
-                if len(barcode1) != len(barcode2): indel += 1
+                if len(barcode1) != len(barcode2): 
+                    indel += 1
+                    if len(barcode1) < len(barcode2):
+                        shorter1 +=1
 
-    return match, diff, indel
+    return match, diff, indel, shorter1
 
-matched,different,indels= compare_maps(file1_dict, file2_dict)
+matched,different,indels,shorter= compare_maps(file1_dict, file2_dict)
 
 # Print stats
 print("Number of barcodes with matching sequences: ", str(matched))
 print("Number of barcodes with different sequences: "+ str(different)+" ("+str(indels)+" barcodes with indels)")
+print("Number of indels where seq from file1 is shorter: ", str(shorter))

@@ -64,7 +64,7 @@ progress_file_name = "progress_file.txt" # create progress file that writes barc
 if options.cont:
     outputfile = open(options.out,"a")
     if os.path.exists(progress_file_name):
-        prog_file = open(progress_file_name,"r")
+        prog_file = open(progress_file_name,"r+")
         remove_keys = [] # list of keys to remove from dict because it's already been processed
         for line in prog_file:
             line = line.strip()
@@ -80,7 +80,7 @@ if options.cont:
 
 else: # if --continue is not included, create/rewrite the progress file from the last run.
     outputfile = open(options.out, "w+")
-    progress_file = open(progress_file_name, "w+")
+    prog_file = open(progress_file_name, "w+")
     
 # ***************************************************************************************** #
     
@@ -189,9 +189,9 @@ def loop_bcs(key):
         if os.path.exists("intermediates/alignments/" + key + ".aln"):
             os.remove("intermediates/alignments/" + key + ".aln")
     # write BC to progress file
-    progress_file.write(key+"\n")
+    prog_file.write(key+"\n")
     if options.verbose: print("Wrote " + key + " to progress file")
-    progress_file.flush()
+    prog_file.flush()
 # ***************************************************************************************** #
 
 # **************** Parallelization and print ********************************************** #
@@ -208,7 +208,7 @@ else:
     
 # close output files
 outputfile.close()
-progress_file.close()
+prog_file.close()
 if options.stats:
     cutoff_file.close()
     threshold_file.close()
