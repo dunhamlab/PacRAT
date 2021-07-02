@@ -1,6 +1,6 @@
-# Subassembly_PB_IndelCorrection
+# PacBio Read Alignment Tool (Pac-RAT)
 
-Correcting indels to PacBio reads for subassembly
+Improving PacBio barcode-variant mapping (subassembly) using multiple sequence alignment.
 
 #### Running instructions on GS Cluster
 qsub ./driver_SUL1_test.sh
@@ -26,11 +26,11 @@ In your driver script, be sure to specify the location of each software using th
 | **--inputSeqs** | Raw barcode, variant, and quality of sequencies |
 | **-c**,**--cutoff** |	Minimum number of CCS reads needed in order to retain reads associated with specific barcodes (default = 2) |
 | **-t**,**--threshold** |	Minimum frequency threshold for calling consensus reads (default = 0.7) |
-| **-s**,**--stats**  | Option to generate alignment stats. Currently outputs below_threshold_Ncount.txt file which returns the barcodes with ambiguous sites and how many ambiguous sites were present total. |
-| **-v**,**--verbose** |	Debug output |
+| **-s**,**--stats**  | Option to generate alignment stats. Currently outputs below_threshold_Ncount.txt and barcodes_below_cutoff.txt files, see below for details |
+| **-v**,**--verbose** |	Print verbose debug output |
 | **-m**,**--muscle** | Location of compiled/extracted MUSCLE program |
 | **-n**,**--needle** | Location of compiled Needle program |
-| **--cont** | If program is disrupted or aborts, this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
+| **--cont** | If program is disrupted or aborts, enabling this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
 | **-r**,**--rmint** | Removes intermediate alignment files |
 
 **Input files:**
@@ -40,8 +40,6 @@ This script requires two input files. The input files for both `--highQual` and 
 **Output files:**
   * The output file, dictated by the file name you specify for `--out`, is a tab-delimited file, where the first column is the barcode and the second column is the aligned associated read. 
   * The script will also produce a file called `progress_file.txt`. This file is generated when a barcode is finished being processed. If your script is killed in the middle of a run, you can include the `--cont` option the next time you run the driver script, and it will not reprocess barcodes that were already processed in the last run.
-  * The `barcodes_below_cutoff.txt` file returns barcodes that were not processed because it did not meet the read cutoff specified by `-c`. You can double check that the script is working properly by adding together the number of barcodes in your output file (from `--out`) and the number of barcodes in the `barcodes_below_cutoff.txt` file.
-  * The `below_threshold_Ncount.txt` file returns the number of barcodes that contained ambiguous sites if the `--stats` option is included. Sites are determined to be ambiguous if nucleotides in the same position do not pass the majority threshold specified by the `--threshold` parameter. If the `--stats` option is not included, the `below_threshold_Ncount.txt` file will be deleted.
-  * `run_times.tsv` returns the start time, end time, and number of cores for a particular job. This is appended to the file.
+  * The `barcodes_below_cutoff.txt` file lists barcodes that were not processed because they did not meet the read cutoff specified by `--cutoff`, if the `--stats` option is included. You can double check that the script is working properly by adding together the number of barcodes in your output file (from `--out`) and the number of barcodes in the `barcodes_below_cutoff.txt` file. If the `--stats` option is not included, the `barcodes_below_cutoff.txt` file will not be generated.
+  * The `below_threshold_Ncount.txt` file returns the number of barcodes that contained ambiguous sites if the `--stats` option is included. Sites are determined to be ambiguous if nucleotides in the same position do not pass the majority threshold specified by the `--threshold` parameter. If the `--stats` option is not included, the `below_threshold_Ncount.txt` file will not be generated.
  
-
