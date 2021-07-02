@@ -77,7 +77,7 @@ progress_file_name = "progress_file.txt" # create progress file that writes barc
 if options.cont:
 	outputfile = open(options.out,"a")
 	if os.path.exists(progress_file_name):
-		prog_file = open(progress_file_name,"r")
+		prog_file = open(progress_file_name,"r+")
 		remove_keys = [] # list of keys to remove from dict because it's already been processed
 		for line in prog_file:
 			line = line.strip()
@@ -92,8 +92,8 @@ if options.cont:
 		sys.exit("Continue option specified but no progress file found, exiting")
 
 else: # if --continue is not included, create/rewrite the progress file from the last run.
-	outputfile = open(options.out, "w+")
-	progress_file = open(progress_file_name, "w+")
+	outputfile = open(options.out, "w")
+	prog_file = open(progress_file_name, "w")
 	
 # ***************************************************************************************** #
 	
@@ -106,8 +106,8 @@ if options.stats:
 		cutoff_file = open(cutoff_filename, "a")
 		threshold_file = open(threshold_filename, "a")
 	else:
-		cutoff_file = open(cutoff_filename, "w+")
-		threshold_file = open(threshold_filename, "w+")
+		cutoff_file = open(cutoff_filename, "w")
+		threshold_file = open(threshold_filename, "w")
 # ***************************************************************************************** #
 
 # **************** Main alignment/Consensus function ************************************** #
@@ -116,16 +116,15 @@ if options.stats:
 def loop_bcs(key):
 	bc_entry = read_dict[key] #list of sequences
 	#create fasta file for each barcode: 
-	int_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
-	if not os.path.isfile(int_file_name): 
-		intermediate_file = open(int_file_name, "w+")
-		i = 0       
-		for item in bc_entry: #add each read for a particular barcode in fasta format
-			intermediate_file.write(">" + key + "_" + str(i) + "\n")
-			intermediate_file.write(item+"\n")
-			i = i+1
-		intermediate_file.close()
-	if options.verbose: print("made fasta file " + str(key))
+	fasta_file_name = os.path.join("intermediates/fasta/" + key + ".fasta") 
+	fasta_file = open(fasta_file_name, "w")
+	i = 0       
+	for item in bc_entry: #add each read for a particular barcode in fasta format
+		fasta_file.write(">" + key + "_" + str(i) + "\n")
+		fasta_file.write(item+"\n")
+		i += 1
+	fasta_file.close()
+	if options.verbose: print("Made fasta file for BC: " + str(key))
 
 	# only align if there are at least CUTOFF ccs reads
 	if len(bc_entry) >= options.cutoff:
@@ -136,9 +135,9 @@ def loop_bcs(key):
 			#align files together - first alignment
 			aln_file_name = "intermediates/alignments/" + key + ".aln"
 			#muscle system call here, write to output file
-			muscle_cline = MuscleCommandline(muscle_exe, input=int_file_name, out=aln_file_name)
-			stdout, stderr = muscle_cline(int_file_name)
-			if options.verbose: print("passed cutoff, made first alignment " + str(key))
+			muscle_cline = MuscleCommandline(muscle_exe, input=fasta_file_name, out=aln_file_name)
+			stdout, stderr = muscle_cline(fasta_file_name)
+			if options.verbose: print("Passed cutoff, made first alignment " + str(key))
 
 			#get consensus: 
 			consensus = ""
@@ -148,8 +147,8 @@ def loop_bcs(key):
 				consensus = summary_align.gap_consensus(threshold=options.thresh,  ambiguous='N')
 				consensus = str(consensus)
 				consensus = consensus.replace("-","") 
-				if options.verbose: print("got consensus 1 " + str(key))
-		
+			else: sys.exit("Could not find alignment file for BC: ", str(key))
+
 			#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 			if 'N' in consensus:
 				# List barcodes that have ambigious sites, if --stats is included
@@ -161,12 +160,12 @@ def loop_bcs(key):
 				
 				#write 1st consensus and HQ read to new file
 				int_file_name_2 = os.path.join("intermediates/fasta_2/" + key + ".fasta")
-				fasta_2 = open(int_file_name_2,"w+")
-				fasta_2.write(">"+key+"\n"+consensus)
+				fasta_2 = open(int_file_name_2,"w")
+				fasta_2.write(">"+key+"\n"+consensus+"\n")
 				fasta_2.close()
 				fasta_hq_name = os.path.join("intermediates/fasta_2/" + key + "_hq.fasta")
-				fasta_hq = open(fasta_hq_name,"w+")
-				fasta_hq.write(">"+key+"_hq\n"+hq_dict[key])
+				fasta_hq = open(fasta_hq_name,"w")
+				fasta_hq.write(">"+key+"_hq\n"+hq_dict[key]+"\n")
 				fasta_hq.close()
 				aln_file_name_2 = "intermediates/realignments/"+key+".aln"
 				cmd = needle_exe + " " + int_file_name_2 + " " + fasta_hq_name + " -auto -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
@@ -177,8 +176,7 @@ def loop_bcs(key):
 				consensus_seq = str(alignment_2[0].seq)
 				hq_seq = str(alignment_2[1].seq)
 				finalSeq = ""
-				lengthOfAlignment = len(consensus_seq)
-				for i in range(lengthOfAlignment):
+				for i in range(len(consensus_seq)):
 					if consensus_seq[i] == "N":
 						finalSeq = finalSeq+hq_seq[i]
 					else:
@@ -186,18 +184,18 @@ def loop_bcs(key):
 				consensus = finalSeq
 				consensus = consensus.replace("-","")		
 				outputfile.write(key+"\t"+consensus+"\n")
-				if options.verbose: print("realigned and got new consensus " + str(key))
+				if options.verbose: print("Realigned and got new consensus for BC: " + str(key))
 	
 			#if no Ns: write consensus to output file
 			else:
 				outputfile.write(key+"\t"+consensus+"\n")
 		
-			if options.verbose: print("got consensus " + str(key))
-		outputfile.flush()
 	else: # generates a file of barcodes that did not meet the minimum number of reads (under option -c)
 		if options.stats:
 			cutoff_file.write(key+"\n")
 			cutoff_file.flush()
+
+	outputfile.flush()
 	# delete fasta files
 	if os.path.exists("intermediates/fasta/" + key + ".fasta"):
 		os.remove("intermediates/fasta/" + key + ".fasta")
@@ -211,9 +209,9 @@ def loop_bcs(key):
 			os.remove("intermediates/alignments/" + key + ".aln")
 		if os.path.exists("intermediates/realignments/"+key+".aln"):
 			os.remove("intermediates/realignments/"+key+".aln")
-	progress_file.write(key+"\n")
+	prog_file.write(key+"\n")
 	if options.verbose: print("Wrote " + key + " to progress file")
-	progress_file.flush()
+	prog_file.flush()
 # ***************************************************************************************** #
 
 # **************** Parallelization and print ********************************************** #
@@ -230,7 +228,7 @@ else:
 	
 # close output files
 outputfile.close()
-progress_file.close()
+prog_file.close()
 if options.stats:
 	cutoff_file.close()
 	threshold_file.close()
