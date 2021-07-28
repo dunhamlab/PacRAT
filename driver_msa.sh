@@ -4,10 +4,6 @@
 #$ -cwd
 #$ -N msa_pacbio
 
-# example error/output file locations: for Clara! CHANGEEEE
-# -o /net/dunham/vol2/Clara/projects/Subassembly_PB_IndelCorrection/test
-# -e /net/dunham/vol2/Clara/projects/Subassembly_PB_IndelCorrection/test
-
 
 SOURCECONDA=$(conda info --base)
 if [ -z "$SOURCECONDA" ]
