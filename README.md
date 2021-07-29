@@ -3,7 +3,7 @@
 Improving PacBio barcode-variant mapping (subassembly) using multiple sequence alignment.
 
 #### Running instructions on GS Cluster
-qsub ./driver_SUL1_test.sh
+qsub ./driver_msa.sh
 
 #### Running locally
 
