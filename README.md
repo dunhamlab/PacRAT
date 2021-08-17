@@ -1,4 +1,4 @@
-# PacBio Read Alignment Tool (Pac-RAT)
+# PacBio Read Alignment Tool (PacRAT)
 
 Improving PacBio barcode-variant mapping (subassembly) using multiple sequence alignment.
 
