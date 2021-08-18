@@ -1,5 +1,7 @@
 # PacBio Read Alignment Tool (PacRAT)
 
+![pacRAT_final_small](https://user-images.githubusercontent.com/50029049/129950855-fe216357-e4b0-48d1-b378-e37d4751ca03.png)
+
 Improving PacBio barcode-variant mapping (subassembly) using multiple sequence alignment.
 
 #### Running instructions on GS Cluster
