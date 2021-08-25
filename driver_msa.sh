@@ -11,7 +11,7 @@ module load biopython/1.77
 module load joblib/0.15.1
 
 # for running in GS cluster
-python msa_pacbio.py -d ./output -o SUL1_test100_barcode_variant_map.txt \
+python msa_pacbio.py -d . -o output/SUL1_test100_barcode_variant_map.txt \
 	--highQual input/SUL1_test100_combined_minQ0_assignment.tsv \
 	--inputSeqs input/SUL1_test100_seq_barcodes_filtered.txt \
 	-c 2 -t 0.6 -v \
