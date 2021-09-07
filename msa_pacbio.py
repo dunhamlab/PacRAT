@@ -25,7 +25,7 @@ parser.add_option("-o","--out", dest="out", help="Output file",default="Seq_barc
 parser.add_option("--highQual", dest="highQualFile", help="File of barcode-seq association, seq from highest quality read",type="string")
 parser.add_option("--inputSeqs", dest="inputSeqsFile", help="Raw barcode, sequence, quality input sequences",type="string")
 # Additional options
-parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs reads for analysis",default=2,type="int")
+parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs reads for analysis",default=1,type="int")
 parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to determine consensus sequence",default=0.6,type="float")
 parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
 parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
