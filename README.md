@@ -6,11 +6,11 @@ Improving PacBio barcode-variant mapping (subassembly) using multiple sequence a
 
 #### Running instructions on GS Cluster
 
-To use, git clone or download and unzip the PacRAT code. From the PacRAT repository, running: 
+To use, git clone or download and unzip the PacRAT code. From the PacRAT repository, run: 
 
 `qsub ./driver_msa.sh`
 
-will run PacRAT with the example data provided in this repository. To run with different data, update the `driver_msa.sh` script with the location of the input and output files, described below. 
+to run PacRAT with the example data provided in this repository. To run with different data, update the `driver_msa.sh` script with the location of the input and output files, described below. 
 
 #### Running locally
 
