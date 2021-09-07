@@ -4,9 +4,9 @@
 
 Improving PacBio barcode-variant mapping (subassembly) using multiple sequence alignment.
 
-#### Running instructions on GS Cluster
+#### Running on UW GS Cluster
 
-To use, git clone or download and unzip the PacRAT code. From the PacRAT repository, run: 
+To use, git clone or download and unzip the PacRAT code. From the PacRAT directory, run: 
 
 `qsub ./driver_msa.sh`
 
@@ -49,3 +49,5 @@ This script requires two input files. The input files for both `--highQual` and 
   * The `barcodes_below_cutoff.txt` file lists barcodes that were not processed because they did not meet the read cutoff specified by `--cutoff`, if the `--stats` option is included. You can double check that the script is working properly by adding together the number of barcodes in your output file (from `--out`) and the number of barcodes in the `barcodes_below_cutoff.txt` file. If the `--stats` option is not included, the `barcodes_below_cutoff.txt` file will not be generated.
   * The `below_threshold_Ncount.txt` file returns the number of barcodes that contained ambiguous sites if the `--stats` option is included. Sites are determined to be ambiguous if nucleotides in the same position do not pass the majority threshold specified by the `--threshold` parameter. If the `--stats` option is not included, the `below_threshold_Ncount.txt` file will not be generated.
  
+ **Example input/output files:**
+ The example input files provided are located in the `input` folder and hold the `--highQual` and `--inputSeqs` files from the simulated H2B library. 
