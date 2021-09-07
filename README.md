@@ -50,4 +50,5 @@ This script requires two input files. The input files for both `--highQual` and 
   * The `below_threshold_Ncount.txt` file returns the number of barcodes that contained ambiguous sites if the `--stats` option is included. Sites are determined to be ambiguous if nucleotides in the same position do not pass the majority threshold specified by the `--threshold` parameter. If the `--stats` option is not included, the `below_threshold_Ncount.txt` file will not be generated.
  
  **Example input/output files:**
+ 
  The example input files provided are located in the `input` folder and hold the `--highQual` and `--inputSeqs` files from the simulated H2B library. 
