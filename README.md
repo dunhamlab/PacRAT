@@ -51,4 +51,4 @@ This script requires two input files. The input files for both `--highQual` and 
  
  **Example input/output files:**
  
- The example input files provided are located in the `input` folder and hold the `--highQual` and `--inputSeqs` files from the simulated H2B library. 
+ The example input files provided are located in the `input` folder and hold the `--highQual` and `--inputSeqs` files from a subset (1000 barcodes) of the simulated H2B library. These example files run in ~ 1 min on the GS cluster. 
