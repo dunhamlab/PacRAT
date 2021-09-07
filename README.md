@@ -17,7 +17,7 @@ to run PacRAT with the example data provided in this repository. To run with dif
 Scripts can run locally, although we recommend using a cluster/job submission system to optimize memory usage. 
 To set up your environment, install [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) and ensure it is working on your computer. Once Anaconda is installed, you should be able to run the `driver_msa.sh` script. If you run the Python script on its own (without using the `driver_msa.sh` script, be sure to load the environment `conda env create --file msaccs_env.yml` and `conda activate msa_ccs` beforehand to ensure all packages are installed, compatible, and activated.
 
-The msa_pacbio.py script utilizes the multiple sequence aligner, [MUSCLE](https://www.drive5.com/muscle/downloads.htm) and Needle through 
+The `msa_pacbio.py` script utilizes the multiple sequence aligner, [MUSCLE](https://www.drive5.com/muscle/downloads.htm) and Needle through 
 [EMBOSS](http://emboss.sourceforge.net/docs/adminguide/node7.html).  
 To install MUSCLE, extract the zipped MUSCLE file `tar -zxvf muscle_filename_here.tar.gz`. The MUSCLE software is ready to run as soon as it is unzipped. For the EMBOSS file, unzip it `tar -zxvf emboss_filename_here.tar.gz`. Through terminal, go to the unzipped EMBOSS directory and type `./configure`. When that is finished, type `make` (this may take 5-10 minutes). The software needed through EMBOSS is called needle, which is located in `EMBOSS-versionX/emboss/needle`.  
 
