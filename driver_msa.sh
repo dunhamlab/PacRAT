@@ -12,10 +12,10 @@ module load numpy/1.19.2
 module load biopython/1.77
 module load joblib/0.15.1
 
-python msa_pacbio.py -d . -o output/H2B_barcode_variant_map_msa.txt \
-	--highQual input/H2B_highQual_seqs_1000_barcodes.tsv \
-	--inputSeqs input/H2B_reads_1000_barcodes.txt \
-	-c 1 -t 0.6 -v \
+python msa_pacbio.py -d ./output -o H2B_barcode_variant_map_msa.txt \
+	--highQual ../input/H2B_highQual_seqs_1000_barcodes.tsv \
+	--inputSeqs ../input/H2B_reads_1000_barcodes.txt \
+	-c 1 -t 0.6 -s -r \
 	-m /net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/CentOS7/x86_64/bin/muscle \
 	-n /net/gs/vol3/software/modules-sw/EMBOSS/6.6.0/Linux/CentOS7/x86_64/bin/needle
 
