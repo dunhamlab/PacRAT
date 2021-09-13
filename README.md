@@ -4,9 +4,15 @@
 
 Improving PacBio barcode-variant mapping (subassembly) using multiple sequence alignment.
 
+### Implementation
+
+To use, git clone or download and unzip the PacRAT code. 
+
+`git clone https://github.com/dunhamlab/PacRAT.git`
+
 #### Running on UW GS Cluster
 
-To use, git clone or download and unzip the PacRAT code. From the PacRAT directory, run: 
+From the PacRAT directory, run: 
 
 `qsub ./driver_msa.sh`
 
@@ -23,6 +29,8 @@ To install MUSCLE, extract the zipped MUSCLE file `tar -zxvf muscle_filename_her
 
 
 In your driver script, be sure to specify the location of each software using the `-m` and `-n` options. You will also need to specify the input files (`--highQual` and `--inputSeqs`), as well as your working directory (`-d`) and output file (`-o`).
+
+**Parameter Descriptions**
   
 | Option | Description |
 |--------|-------------|
