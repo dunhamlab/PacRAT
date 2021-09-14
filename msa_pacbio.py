@@ -98,16 +98,19 @@ else: # if --continue is not included, create/rewrite the progress file from the
 # ***************************************************************************************** #
 	
 # ************** Stats option: open/append relevant files (option -s, --stats) ************ #
-cutoff_filename = "barcodes_below_cutoff.txt" # barcodes that miss the cutoff
-threshold_filename = "below_threshold_Ncount.txt" # barcodes that have an ambigious site in sequence
+cutoff_filename = "barcodes_below_cutoff.txt" # barcodes that miss the cutoff, defined by --cutoff parameter
+threshold_filename = "below_threshold_Ncount.txt" # barcodes that have an ambiguous site in sequence
+barcode_ccs_counts_filename = "ccs_count_per_barcode.txt" # counts number of ccs reads per barcode
 if options.stats:
 	if options.verbose: print("Creating stats files")
 	if options.cont:
 		cutoff_file = open(cutoff_filename, "a")
 		threshold_file = open(threshold_filename, "a")
+		ccs_count_per_bc = open(barcode_ccs_counts_filename,"a")
 	else:
 		cutoff_file = open(cutoff_filename, "w")
 		threshold_file = open(threshold_filename, "w")
+		ccs_count_per_bc = open(barcode_ccs_counts_filename,"w")
 # ***************************************************************************************** #
 
 # **************** Main alignment/Consensus function ************************************** #
@@ -123,6 +126,7 @@ def loop_bcs(key):
 		fasta_file.write(">" + key + "_" + str(i) + "\n")
 		fasta_file.write(item+"\n")
 		i += 1
+	num_reads_for_bc = i
 	fasta_file.close()
 	if options.verbose: print("Made fasta file for BC: " + str(key))
 
@@ -182,7 +186,7 @@ def loop_bcs(key):
 					else:
 						finalSeq = finalSeq + consensus_seq[i]
 				consensus = finalSeq
-				consensus = consensus.replace("-","")		
+				consensus = consensus.replace("-","")	
 				outputfile.write(key+"\t"+consensus+"\n")
 				if options.verbose: print("Realigned and got new consensus for BC: " + str(key))
 	
@@ -196,6 +200,8 @@ def loop_bcs(key):
 			cutoff_file.flush()
 
 	outputfile.flush()
+	if options.stats:
+		ccs_count_per_bc.write(key + "\t" + str(num_reads_for_bc) + "\n")
 	# delete fasta files
 	if os.path.exists("intermediates/fasta/" + key + ".fasta"):
 		os.remove("intermediates/fasta/" + key + ".fasta")
