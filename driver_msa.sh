@@ -65,5 +65,5 @@ python msa_pacbio.py -d ./output -o H2B_barcode_variant_map_msa.txt \
 # python msa_pacbio.py -d ./output -o H2B_barcode_variant_map_msa.txt \
 # 	--highQual ../input/H2B_combined_minQ0_assignment.tsv \
 # 	--inputSeqs ../input/H2B_seq_barcodes.txt \
-#	-c 1 -t 0.6 -v \
+#	-c 1 -t 0.6 -s \
 # 	-m ../../muscle/muscle -n ../../emboss/EMBOSS-6.6.0/emboss/needle
