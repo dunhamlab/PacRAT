@@ -37,7 +37,7 @@ In your driver script (you can use `driver_msa.sh` to run your program; be sure 
 | **-d**,**--directory**	| Specify working directory where intermediate and output files will be located |
 | **-o**,**--out** |	Specify the name of the final output file  (default = Seq_barcodes_aligned.txt) |
 | **--highQual** | File of barcode-variant association, where the variant is the highest quality read  |
-| **--inputSeqs** | Raw barcode, variant, and quality of sequencies |
+| **--inputSeqs** | Raw barcode, variant, and quality of sequences |
 | **-c**,**--cutoff** |	Minimum number of CCS reads needed in order to retain reads associated with specific barcodes (default = 1) |
 | **-t**,**--threshold** |	Minimum frequency threshold for calling consensus reads (default = 0.6) |
 | **-s**,**--stats**  | Option to generate alignment stats. Currently outputs below_threshold_Ncount.txt, barcodes_below_cutoff.txt files, and ccs_count_per_barcode.txt; see below for details |
