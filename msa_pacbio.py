@@ -175,21 +175,24 @@ def loop_bcs(key):
 				cmd = needle_exe + " " + int_file_name_2 + " " + fasta_hq_name + " -auto -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
 				os.system(cmd)
 
-				#consensus of new alignment file (mostly same from previous script)
-				alignment_2 = list(SeqIO.parse(aln_file_name_2,"fasta"))
-				consensus_seq = str(alignment_2[0].seq)
-				hq_seq = str(alignment_2[1].seq)
-				finalSeq = ""
-				for i in range(len(consensus_seq)):
-					if consensus_seq[i] == "N":
-						finalSeq = finalSeq+hq_seq[i]
-					else:
-						finalSeq = finalSeq + consensus_seq[i]
-				consensus = finalSeq
-				consensus = consensus.replace("-","")	
-				outputfile.write(key+"\t"+consensus+"\n")
-				if options.verbose: print("Realigned and got new consensus for BC: " + str(key))
-	
+				if os.path.exists(aln_file_name_2):
+					#consensus of new alignment file (mostly same from previous script)
+					alignment_2 = list(SeqIO.parse(aln_file_name_2,"fasta"))
+					consensus_seq = str(alignment_2[0].seq)
+					hq_seq = str(alignment_2[1].seq)
+					finalSeq = ""
+					for i in range(len(consensus_seq)):
+						if consensus_seq[i] == "N":
+							finalSeq = finalSeq+hq_seq[i]
+						else:
+							finalSeq = finalSeq + consensus_seq[i]
+					consensus = finalSeq
+					consensus = consensus.replace("-","")	
+					outputfile.write(key+"\t"+consensus+"\n")
+					if options.verbose: print("Realigned and got new consensus for BC: " + str(key))
+				else:
+					print("WARNING: Realignment failed for barcode: "+ str(key),file=sys.stderr)
+				
 			#if no Ns: write consensus to output file
 			else:
 				outputfile.write(key+"\t"+consensus+"\n")
