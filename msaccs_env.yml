@@ -1,7 +1,12 @@
 name: msa_ccs
-
+channels:
+  - defaults
+  - anaconda
+  - bioconda
 dependencies:
   - python=3.6
   - biopython=1.78
   - numpy
   - joblib=0.17.0
+  - muscle
+  - emboss
