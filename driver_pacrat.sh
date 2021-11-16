@@ -18,7 +18,7 @@
 # module load biopython/1.77
 # module load joblib/0.15.1
 # 
-# python msa_pacbio.py -d ./output -o H2B_barcode_variant_map_msa.txt \
+# python pacrat.py -d ./output -o H2B_barcode_variant_map_msa.txt \
 # 	--highQual ../input/H2B_highQual_seqs_1000_barcodes.tsv \
 # 	--inputSeqs ../input/H2B_reads_1000_barcodes.txt \
 # 	-c 1 -t 0.6 -s \
@@ -44,18 +44,18 @@ exit 1
 fi
 
 # Install and activate conda environment
-ENVCHECK=$(conda env list | grep "msa_ccs")
+ENVCHECK=$(conda env list | grep "pacrat_env")
 source $SOURCECONDA/etc/profile.d/conda.sh
 if [ -z "$ENVCHECK" ]
 then
-	echo "msa_ccs environment not installed! installing now..."
-conda env create --file msaccs_env.yml
-echo "msa_ccs environment installed"
+	echo "pacrat_env environment not installed! installing now..."
+conda env create --file pacrat_env.yml
+echo "pacrat_env environment installed"
 else
-echo "msa_ccs environment is installed!"
+echo "pacrat_env environment is installed!"
 fi
 
-conda activate msa_ccs
+conda activate pacrat_env
 echo "Environment activated"
 
 # example for running locally
