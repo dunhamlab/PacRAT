@@ -1,4 +1,4 @@
-name: msa_ccs
+name: pacrat_env
 channels:
   - defaults
   - anaconda
