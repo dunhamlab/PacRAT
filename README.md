@@ -23,12 +23,7 @@ to run PacRAT with the example data provided in this repository. To run with dif
 Scripts can run locally, although we recommend using a cluster/job submission system to optimize memory usage. 
 To set up your environment, install [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) and ensure it is working on your computer. Once Anaconda is installed, you should be able to run the `driver_msa.sh` script. If you run the Python script on its own (without using the `driver_msa.sh` script, be sure to load the environment `conda env create --file msaccs_env.yml` and `conda activate msa_ccs` beforehand to ensure all packages are installed, compatible, and activated.
 
-The `msa_pacbio.py` script utilizes the multiple sequence aligner, [MUSCLE](https://www.drive5.com/muscle/downloads.htm) and Needle through 
-[EMBOSS](http://emboss.sourceforge.net/docs/adminguide/node7.html).  
-To install MUSCLE, extract the zipped MUSCLE file `tar -zxvf muscle_filename_here.tar.gz`. The MUSCLE software is ready to run as soon as it is unzipped. For the EMBOSS file, unzip it `tar -zxvf emboss_filename_here.tar.gz`. Through terminal, go to the unzipped EMBOSS directory and type `./configure`. When that is finished, type `make` (this may take 5-10 minutes). The software needed through EMBOSS is called needle, which is located in `EMBOSS-versionX/emboss/needle`.  
-
-
-In your driver script (you can use `driver_msa.sh` to run your program; be sure to comment out Section 1 and *uncomment Section 2*), specify the location of each software using the `-m` and `-n` options. You will also need to specify the input files (`--highQual` and `--inputSeqs`), as well as your working directory (`-d`) and output file (`-o`).
+In your driver script (you can use `driver_msa.sh` to run your program; be sure to comment out the appropriate sections*), specify the location of the input files (`--highQual` and `--inputSeqs`), as well as your working directory (`-d`) and output file (`-o`).
 
 **Parameter Descriptions**
   
@@ -42,8 +37,6 @@ In your driver script (you can use `driver_msa.sh` to run your program; be sure 
 | **-t**,**--threshold** |	Minimum frequency threshold for calling consensus reads (default = 0.6) |
 | **-s**,**--stats**  | Option to generate alignment stats. Currently outputs below_threshold_Ncount.txt, barcodes_below_cutoff.txt files, and ccs_count_per_barcode.txt; see below for details |
 | **-v**,**--verbose** |	Print verbose debug output |
-| **-m**,**--muscle** | Location of compiled/extracted MUSCLE program |
-| **-n**,**--needle** | Location of compiled Needle program |
 | **--cont** | If program is disrupted or aborts, enabling this feature will allow user to continue with unprocessed reads. Previously processed reads will not be reprocessed |
 | **-r**,**--rmint** | Removes intermediate alignment files |
 
