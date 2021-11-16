@@ -28,15 +28,11 @@ parser.add_option("--inputSeqs", dest="inputSeqsFile", help="Raw barcode, sequen
 parser.add_option("-c","--cutoff", dest="cutoff", help="Minimum number of ccs reads for analysis",default=1,type="int")
 parser.add_option("-t","--threshold", dest="thresh", help="Minimum threshold to determine consensus sequence",default=0.6,type="float")
 parser.add_option("-v","--verbose", dest="verbose", help="Turn debug output on",default=False,action="store_true")
-parser.add_option("-m","--muscle", dest="muscle", help="Compiled MUSCLE program",default="./muscle",type="string")
-parser.add_option("-n","--needle", dest="needle", help="Compiled NEEDLE program",default="./needle",type="string")
 parser.add_option("--cont", dest="cont", help="Continue working after disrupted run",default=False,action="store_true")
 parser.add_option("-s", "--stats", dest="stats", help="Get stats for barcodes that need realignment",default=False,action="store_true")
 parser.add_option("-r","--rmint", dest="rm_intermediates",help="Removes intermediate files when finished",default=False,action="store_true")
 
 (options, args) = parser.parse_args()
-muscle_exe = options.muscle
-needle_exe = options.needle
 
 os.chdir(options.workdir) # change working directory to output folder
 
@@ -139,8 +135,8 @@ def loop_bcs(key):
 			#align files together - first alignment
 			aln_file_name = "intermediates/alignments/" + key + ".aln"
 			#muscle system call here, write to output file
-			muscle_cline = MuscleCommandline(muscle_exe, input=fasta_file_name, out=aln_file_name)
-			stdout, stderr = muscle_cline(fasta_file_name)
+			cmd = "muscle -in " + fasta_file_name + " -out " + aln_file_name + " -quiet"
+			os.system(cmd)
 			if options.verbose: print("Passed cutoff, made first alignment " + str(key))
 
 			#get consensus: 
@@ -172,7 +168,7 @@ def loop_bcs(key):
 				fasta_hq.write(">"+key+"_hq\n"+hq_dict[key]+"\n")
 				fasta_hq.close()
 				aln_file_name_2 = "intermediates/realignments/"+key+".aln"
-				cmd = needle_exe + " " + int_file_name_2 + " " + fasta_hq_name + " -auto -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
+				cmd = "needle " + int_file_name_2 + " " + fasta_hq_name + " -auto -gapopen 10 -gapextend 0.5 -outfile " + aln_file_name_2 + " -aformat fasta"
 				os.system(cmd)
 
 				if os.path.exists(aln_file_name_2):
