@@ -23,7 +23,7 @@ to run PacRAT with the example data provided in this repository. To run with dif
 Scripts can run locally, although we recommend using a cluster/job submission system to optimize memory usage. 
 To set up your environment, install [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) and ensure it is working on your computer. Once Anaconda is installed, you should be able to run the `driver_msa.sh` script. If you run the Python script on its own (without using the `driver_msa.sh` script, be sure to load the environment `conda env create --file msaccs_env.yml` and `conda activate msa_ccs` beforehand to ensure all packages are installed, compatible, and activated.
 
-In your driver script (you can use `driver_msa.sh` to run your program; be sure to comment out the appropriate sections*), specify the location of the input files (`--highQual` and `--inputSeqs`), as well as your working directory (`-d`) and output file (`-o`).
+In your driver script (you can use `driver_msa.sh` to run your program; be sure to comment out the appropriate sections), specify the location of the input files (`--highQual` and `--inputSeqs`), as well as your working directory (`-d`) and output file (`-o`).
 
 **Parameter Descriptions**
   
