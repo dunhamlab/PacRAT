@@ -14,23 +14,23 @@ To use, git clone or download and unzip the PacRAT code.
 
 From the PacRAT directory, run: 
 
-`qsub ./driver_msa.sh`
+`qsub ./driver_pacrat.sh`
 
-to run PacRAT with the example data provided in this repository. To run with different data, update the `driver_msa.sh` script with the location of the input and output files, described below. 
+to run PacRAT with the example data provided in this repository. To run with different data, update the `driver_pacrat.sh` script with the location of the input and output files, described below. 
 
 #### Running locally
 
 Scripts can run locally, although we recommend using a cluster/job submission system to optimize memory usage. 
-To set up your environment, install [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) and ensure it is working on your computer. Once Anaconda is installed, you should be able to run the `driver_msa.sh` script. If you run the Python script on its own (without using the `driver_msa.sh` script, be sure to load the environment `conda env create --file msaccs_env.yml` and `conda activate msa_ccs` beforehand to ensure all packages are installed, compatible, and activated.
+To set up your environment, install [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) and ensure it is working on your computer. Once Anaconda is installed, you should be able to run the `driver_pacrat.sh` script. If you run the Python script on its own (without using the `driver_pacrat.sh` script, be sure to load the environment `conda env create --file pacrat_env.yml` and `conda activate pacrat_env` beforehand to ensure all packages are installed, compatible, and activated.
 
-In your driver script (you can use `driver_msa.sh` to run your program; be sure to comment out the appropriate sections), specify the location of the input files (`--highQual` and `--inputSeqs`), as well as your working directory (`-d`) and output file (`-o`).
+In your driver script (you can use `driver_pacrat.sh` to run your program; be sure to comment out the appropriate sections), specify the location of the input files (`--highQual` and `--inputSeqs`), as well as your working directory (`-d`) and output file (`-o`).
 
 **Parameter Descriptions**
   
 | Option | Description |
 |--------|-------------|
 | **-d**,**--directory**	| Specify working directory where intermediate and output files will be located |
-| **-o**,**--out** |	Specify the name of the final output file  (default = Seq_barcodes_aligned.txt) |
+| **-o**,**--out** |	Specify the name of the final output file  (default = H2B_barcode_variant_map_msa.txt) |
 | **--highQual** | File of barcode-variant association, where the variant is the highest quality read  |
 | **--inputSeqs** | Raw barcode, variant, and quality of sequences |
 | **-c**,**--cutoff** |	Minimum number of CCS reads needed in order to retain reads associated with specific barcodes (default = 1) |
