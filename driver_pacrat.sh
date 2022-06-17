@@ -14,17 +14,32 @@
 ## ******* Section 1: For CentOS7 on the Genome Sciences cluster ******* #
 ## Comment this section out if you are running locally or on a different cluster environment
 # module load python/3.7.7
-# # numpy is now installed through conda. (module load numpy/1.19.2) # numpy module no longer on GS cluster, install via pip or conda (see Section 2 below for installing through conda)
-# module load biopython/1.77
 # module load joblib/0.15.1
-# 
+# SOURCECONDA=$(conda info --base)
+# if [ -z "$SOURCECONDA" ]
+# then
+# echo "Conda not available. Please install Anaconda or Miniconda https://docs.conda.io/en/latest/miniconda.html"
+# exit 1
+# fi
+
+## Install and activate conda environment
+# ENVCHECK=$(conda env list | grep "pacrat_env")
+# source $SOURCECONDA/etc/profile.d/conda.sh
+# if [ -z "$ENVCHECK" ]
+# then
+#        echo "pacrat_env environment not installed! installing now..."
+# conda env create --file pacrat_env.yml
+# echo "pacrat_env environment installed"
+# else
+# echo "pacrat_env environment is installed!"
+# fi
+
+# conda activate pacrat_env
+# echo "Environment activated"
 # python pacrat.py -d ./output -o H2B_barcode_variant_map_msa.txt \
 # 	--highQual ../input/H2B_highQual_seqs_1000_barcodes.tsv \
 # 	--inputSeqs ../input/H2B_reads_1000_barcodes.txt \
 # 	-c 1 -t 0.6 -s \
-# 	-m /net/gs/vol3/software/modules-sw/muscle/3.8.31/Linux/CentOS7/x86_64/bin/muscle \
-# 	-n /net/gs/vol3/software/modules-sw/EMBOSS/6.6.0/Linux/CentOS7/x86_64/bin/needle
-
 
 
 
