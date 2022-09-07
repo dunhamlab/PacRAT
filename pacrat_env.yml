@@ -8,5 +8,5 @@ dependencies:
   - biopython=1.78
   - numpy
   - joblib=0.17.0
-  - muscle
+  - muscle=3.8.31
   - emboss
