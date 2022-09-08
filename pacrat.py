@@ -147,7 +147,7 @@ def loop_bcs(key):
 				consensus = summary_align.gap_consensus(threshold=options.thresh,  ambiguous='N')
 				consensus = str(consensus)
 				consensus = consensus.replace("-","") 
-			else: sys.exit("Could not find alignment file for BC: ", str(key))
+			else: sys.exit("Could not find alignment file for BC: " + str(key))
 
 			#if N's: realign (pairwise aligner w/in python) to highest qual, and find consensus from that
 			if 'N' in consensus:
