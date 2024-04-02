@@ -4,7 +4,7 @@
 
 Improving PacBio barcode-variant mapping (subassembly) using multiple sequence alignment.
 
-PacRAT is now published in _Bioinformatics_ and can be accessed [here](https://academic.oup.com/bioinformatics/article/38/10/2927/6551246).
+If you found PacRAT helpful, please cite our work published in [_Bioinformatics_](https://academic.oup.com/bioinformatics/article/38/10/2927/6551246). 
 
 ### Implementation
 
